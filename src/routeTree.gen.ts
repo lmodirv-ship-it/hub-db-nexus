@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
 import { Route as DatabasesAddRouteImport } from './routes/databases.add'
+import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
 
 const WebsitesRoute = WebsitesRouteImport.update({
   id: '/websites',
@@ -58,6 +59,11 @@ const DatabasesAddRoute = DatabasesAddRouteImport.update({
   path: '/databases/add',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
+  id: '/api/public/site-config',
+  path: '/api/public/site-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
+  '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases': typeof DatabasesIndexRoute
+  '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
+  '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/websites'
     | '/databases/add'
     | '/databases/'
+    | '/api/public/site-config'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/websites'
     | '/databases/add'
     | '/databases'
+    | '/api/public/site-config'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/websites'
     | '/databases/add'
     | '/databases/'
+    | '/api/public/site-config'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   WebsitesRoute: typeof WebsitesRoute
   DatabasesAddRoute: typeof DatabasesAddRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
+  ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DatabasesAddRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/site-config': {
+      id: '/api/public/site-config'
+      path: '/api/public/site-config'
+      fullPath: '/api/public/site-config'
+      preLoaderRoute: typeof ApiPublicSiteConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   WebsitesRoute: WebsitesRoute,
   DatabasesAddRoute: DatabasesAddRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
+  ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
