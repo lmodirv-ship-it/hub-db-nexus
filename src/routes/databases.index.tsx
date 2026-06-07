@@ -38,9 +38,16 @@ function StatusBadge({ status }: { status: string }) {
     Error: "bg-destructive/15 text-destructive border-destructive/30",
     Offline: "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
   };
-  const labels: Record<string, string> = { Active: "نشطة", Error: "خطأ", Offline: "متوقفة" };
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    Active: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
+    Slow: "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
+    Error: "bg-destructive/15 text-destructive border-destructive/30",
+    Offline: "bg-muted text-muted-foreground border-border",
+  };
+  const labels: Record<string, string> = { Active: "نشطة", Slow: "بطيئة", Error: "خطأ", Offline: "متوقفة" };
   return (
-    <Badge variant="outline" className={`${map[status]} font-medium`}>
+    <Badge variant="outline" className={`${map[status] ?? "bg-muted"} font-medium`}>
       <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
       {labels[status] ?? status}
     </Badge>
