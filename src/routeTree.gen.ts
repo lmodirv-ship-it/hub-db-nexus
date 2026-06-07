@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
+import { Route as DatabasesAddRouteImport } from './routes/databases.add'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +23,39 @@ const DatabasesIndexRoute = DatabasesIndexRouteImport.update({
   path: '/databases/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DatabasesAddRoute = DatabasesAddRouteImport.update({
+  id: '/databases/add',
+  path: '/databases/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/databases/add': typeof DatabasesAddRoute
   '/databases': typeof DatabasesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/databases/'
+  fullPaths: '/' | '/databases/add' | '/databases/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/databases'
-  id: '__root__' | '/' | '/databases/'
+  to: '/' | '/databases/add' | '/databases'
+  id: '__root__' | '/' | '/databases/add' | '/databases/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DatabasesAddRoute: typeof DatabasesAddRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
 }
 
@@ -65,11 +75,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DatabasesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/databases/add': {
+      id: '/databases/add'
+      path: '/databases/add'
+      fullPath: '/databases/add'
+      preLoaderRoute: typeof DatabasesAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DatabasesAddRoute: DatabasesAddRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
 }
 export const routeTree = rootRouteImport
