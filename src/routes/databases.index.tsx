@@ -259,6 +259,18 @@ function DatabasesPage() {
             </table>
           </div>
         </Card>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".sql,text/plain"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            const id = importTargetRef.current;
+            if (f && id) importMut.mutate({ id, file: f });
+            e.target.value = "";
+          }}
+        />
       </div>
     </>
   );
