@@ -1,64 +1,101 @@
-# خطة تطوير HN-DB
+# خطة إصلاح HN-DB بناءً على تقرير الفحص
 
-الميزات الموجودة حالياً: Backup/Restore أساسي، Connections (ربط موقع-قاعدة)، Activity Log أساسي، إدارة قواعد.
+التقرير يغطي المنظومة الثلاثية، لكن هذا المشروع هو **HN-DB** فقط. الخطة تعالج النقاط الخاصة به فقط — أي إصلاحات لـ TVCC أو HN-Cloud يجب أن تنفّذ داخل مشاريعها.
 
-## ما سيُبنى (حسب أولويتك)
+## 1) إصلاحات الحزم والبناء (أولوية عالية)
 
-### 1. Health Monitor (موسّع)
-- صفحة `/health` تعرض كل قاعدة + شارة الحالة: Connected / Slow / Error / Offline.
-- زر "فحص الكل" + فحص فردي.
-- إظهار: آخر فحص، زمن الاستجابة (ms)، سبب الخطأ.
-- عمود جديد في `databases`: `last_check_ms`, `last_error`.
+- **توحيد اسم المشروع**: تغيير `name` في `package.json` من `tanstack_start_ts` إلى `hn-db`.
+- **حل تعارض peer dependency** بين `nitro` و `@lovable.dev/vite-tanstack-config`:
+  - تثبيت `@lovable.dev/vite-tanstack-config` على نسخة دقيقة (إزالة `^`) متوافقة مع `nitro 3.0.260429-beta` الموجود.
+- **اعتماد Bun كمدير حزم وحيد** (يتماشى مع `bunfig.toml` و `bun.lock` الموجودين). توثيق ذلك في README + INSTALLATION.
+- **إضافة scripts ناقصة** في `package.json`:
+  - `"typecheck": "tsc --noEmit"`
+  - `"start": "node .output/server/index.mjs"` (بعد التحقق من المسار الفعلي بعد build)
+- **التحقق الفعلي من مسار build output** عبر تشغيل `bun run build` ومعرفة أين يولّد Nitro ملف الخادم، ثم تحديث `start` و `DEPLOYMENT.md` بالمسار الصحيح.
 
-### 2. Backup & Restore (تحسين)
-- إضافة **Scheduled Backup**: حقل `backup_schedule` (daily/weekly/off) + `next_backup_at`.
-- زر **Download Backup** (ملف JSON وهمي يمثل snapshot — بدون اتصال فعلي بـ DB خارجي).
-- جدول cron عبر pg_cron يستدعي `/api/public/hooks/run-backups`.
+## 2) إصلاحات الأمان (أولوية عالية)
 
-### 3. Connections Manager (تحسين)
-- صفحة `/connections` الموجودة تُحدَّث لعرض: الموقع، القاعدة، حالة الربط، آخر اتصال، زر فحص.
+- **إضافة `.env` إلى `.gitignore`** (مفقود حالياً حسب التقرير).
+- **مراجعة سياسة RLS على `profiles`**: حالياً `USING (true)` تسمح لأي مستخدم مصادَق بقراءة كل البروفايلات. لأن هذا مشروع شخصي owner-only، تقييد السياسة إلى `auth.uid() = id` فقط.
 
-### 4. Import / Export
-- في صفحة قاعدة: زر **Export JSON** (metadata + آخر backups) و **Export SQL** (DDL وهمي).
-- زر **Import SQL**: رفع ملف `.sql`، يُخزَّن في bucket `db-imports` ويُسجَّل في `logs`.
+## 3) استبدال المحاكاة بوظائف حقيقية (أولوية عالية)
 
-### 5. Alerts
-- جدول `alerts` (type, severity, database_id, message, read).
-- توليد تلقائي عند: Backup failed، Health check failed، نمو حجم > 50% خلال 7 أيام.
-- جرس في الـ Header يعرض غير المقروءة + صفحة `/alerts`.
+التقرير يشير أن `health check` و `backups` في HN-DB محاكاة (`Math.random()` ونحوه). نضيف server functions حقيقية:
 
-### 6. Activity Log (تحسين)
-- صفحة `/logs` موجودة. إضافة فلاتر: حسب النوع، النتيجة، المدى الزمني، البحث.
-- ربط `actor_email` من `profiles` للعرض.
+- **Health Check حقيقي** عبر `createServerFn` + `pg` client:
+  - يفتح اتصال TCP/Postgres فعلي لـ `host:port` المخزّن.
+  - يقيس latency حقيقي، يخزّن `last_check_ms` و `last_error`.
+  - يتعامل مع timeout قصير (5s) ويُسجّل في `logs` + ينشئ `alert` عند الفشل.
+- **Backup حقيقي** عبر server function:
+  - تنفيذ `pg_dump` غير ممكن داخل Worker، لذلك البديل العملي: استخدام Supabase JS لتفريغ جداول `public.*` إلى JSON ورفعها إلى bucket `app-releases` (أو bucket مخصص `db-backups`)، مع حساب حجم فعلي وتخزينه في `backups.size_mb`.
+  - `Download Backup`: signed URL من Storage.
+  - `Restore`: قراءة JSON من Storage وإعادة إدخاله (مع تحذير واضح).
+- إزالة أي قيم وهمية متبقية في `lib/api.ts`.
 
-### تأجيل (ميزات منخفضة الأولوية حالياً)
-- Database Size Tracking مع رسم 7/30 يوم (يحتاج جدول `db_size_snapshots` + cron) — أقترح المرحلة الثانية.
-- Query Logs (يتطلب اتصال فعلي بقواعد خارجية — غير ممكن من Worker).
-- Secrets Protection: لا توجد كلمات مرور حالياً مخزَّنة (الجدول لا يحوي password) — لا حاجة لتعديل.
-- Database Templates: مرحلة لاحقة.
+## 4) إنشاء Storage Buckets في migration
 
-## تغييرات تقنية
+- إضافة migration ينشئ bucket `app-releases` (وربما `db-backups`) إن لم يكن موجوداً، مع سياسات RLS مناسبة على `storage.objects` (owner-only).
+- توثيق أن البكت ينشأ تلقائياً عند `db push`.
 
-**Migrations:**
-- `databases`: + `last_check_ms int`, `last_error text`, `backup_schedule text default 'off'`, `next_backup_at timestamptz`.
-- جدول جديد `alerts` (RLS owner-based + grants).
-- جدول جديد `db_size_snapshots` (للمرحلة الثانية — مؤجَّل).
-- bucket `db-imports` (private، RLS owner).
+## 5) تنظيف الحزمة المصدرية
 
-**ملفات:**
-- `src/routes/health.tsx` جديد.
-- `src/routes/alerts.tsx` جديد.
-- `src/routes/connections.tsx` تحديث.
-- `src/routes/logs.tsx` فلاتر.
-- `src/routes/databases.index.tsx` أزرار Export/Import + Schedule.
-- `src/components/app-sidebar.tsx` روابط جديدة + جرس Alerts.
-- `src/lib/api.ts` دوال: `checkHealth`, `checkAllHealth`, `setSchedule`, `exportDb`, `importSql`, `listAlerts`, `markAlertRead`.
-- `src/routes/api/public/hooks/run-backups.ts` + `health-check.ts` + pg_cron.
+- حذف من الأرشيف القادم: `.tanstack/`، `.wrangler/`، `hn-db.zip` الداخلي.
+- التأكد أن سكربت ZIP في النهاية يستثني هذه المجلدات.
 
-## ترتيب التنفيذ
-1. Migrations (alerts + أعمدة databases + bucket).
-2. API helpers + hooks routes + cron.
-3. صفحات Health, Alerts + sidebar/bell.
-4. تحديث Connections, Logs, Databases (Export/Import/Schedule).
+## 6) تنظيف `.env.example` والمتغيرات غير المستخدمة
 
-هل أبدأ التنفيذ بهذا الترتيب؟
+التقرير يلاحظ أن متغيرات `HN_CLOUD_*` و `TVCC_WEBHOOK_SECRET` و `AUTH_SECRET` موجودة في `.env.example` لكنها غير مستخدمة. خياران:
+- **الإبقاء** عليها مع تعليق `# reserved for future integration` (يتوافق مع memory: البنية مفتوحة لـ Lovable/GitHub/ZIP integrations).
+- **الحذف** الآن وإعادتها لاحقاً.
+
+التوصية: الإبقاء مع تعليق واضح، لأنه يخدم منظومة TVCC + HN-Cloud.
+
+## 7) ضبط TypeScript
+
+- إضافة `"node"` إلى `compilerOptions.types` في `tsconfig.json` ليصبح `["vite/client", "node"]` لأن الكود يستخدم `process.env`, `Buffer`, `crypto`.
+- تشغيل `bun run typecheck` والتأكد من 0 أخطاء.
+
+## 8) تحديث التوثيق
+
+- **INSTALLATION.md**: استبدال `npm install` بـ `bun install` كمسار افتراضي، مع ذكر npm كبديل اختياري + ملاحظة استخدام `--legacy-peer-deps`.
+- **DEPLOYMENT.md**: تصحيح مسار `node dist/server/index.mjs` إلى المسار الفعلي بعد التحقق + إضافة قسم لإنشاء buckets يدوياً كاحتياط.
+- **FINAL_REPORT.md**: تحديث قسم "ما تم إنجازه" ليعكس أن health/backup أصبحا فعليين.
+
+## 9) إعادة بناء ZIP
+
+بعد كل ما سبق:
+- `bun install` ← `bun run typecheck` ← `bun run build` ← تأكيد نجاح البناء.
+- توليد `hn-db.zip` نظيف (بدون `.tanstack`, `.wrangler`, `node_modules`, `dist`, `.output`, `.env`, ZIP داخلي).
+
+## التفاصيل التقنية
+
+```text
+ملفات سيتم تعديلها:
+- package.json                          (name, scripts, lovable config version pin)
+- .gitignore                            (إضافة .env)
+- tsconfig.json                         (إضافة "node" إلى types)
+- .env.example                          (تعليقات توضيحية)
+- src/lib/api.ts                        (وظائف حقيقية)
+- INSTALLATION.md, DEPLOYMENT.md, FINAL_REPORT.md
+
+ملفات سيتم إنشاؤها:
+- src/lib/health.functions.ts           (Health Check حقيقي)
+- src/lib/backups.functions.ts          (Backup/Restore حقيقي)
+- supabase/migrations/<ts>_buckets_and_rls_fixes.sql
+  - إنشاء bucket db-backups (وapp-releases إن لم يكن)
+  - سياسات storage.objects (owner-only)
+  - تعديل سياسة profiles_select_own إلى auth.uid() = id
+
+تبعيات قد تُضاف:
+- pg (للاتصال الفعلي بـ Postgres خارجية في health check)
+  ملاحظة: pg يعمل على Node لكنه ثقيل على Worker.
+  البديل: استخدام fetch مباشر إلى Supabase REST لاختبار قواعد Supabase،
+  أو استخدام postgres.js (أخف ومتوافق edge).
+  القرار: postgres.js لأنه edge-friendly.
+```
+
+## ما هو خارج النطاق
+
+- إصلاحات TVCC (`ssl_certificates`, lockfile, schema): يجب تنفيذها في مشروع TVCC.
+- إصلاحات HN-Cloud (`backup_type enum`, buckets, runner): في مشروع HN-Cloud.
+- إنشاء Dockerfile / PM2 ecosystem (التقرير يصنّفها أولوية منخفضة، والتوثيق الحالي يكفي للنشر اليدوي).

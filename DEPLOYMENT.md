@@ -3,16 +3,18 @@
 ## 1. تجهيز السيرفر (Ubuntu 22.04+)
 
 ```bash
-# Node.js 20
+# Node.js 20 + nginx + certbot + pm2
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs nginx certbot python3-certbot-nginx
 sudo npm install -g pm2
+
+# Bun (موصى به للتثبيت)
+curl -fsSL https://bun.sh/install | bash
 ```
 
 ## 2. رفع المشروع
 
 ```bash
-# من جهازك المحلي
 scp hn-db.zip user@your-vps:/var/www/
 ssh user@your-vps
 cd /var/www
@@ -23,45 +25,47 @@ cd hn-db
 ## 3. تثبيت الحزم
 
 ```bash
-npm ci
+bun install
 ```
 
 ## 4. إعداد Environment Variables
 
 ```bash
 cp .env.example .env
-nano .env       # املأ القيم الحقيقية (راجع INSTALLATION.md)
+nano .env
 ```
 
-> **مهم:** لا ترفع `.env` إلى Git مطلقاً.
+> **مهم:** `.env` مضاف إلى `.gitignore` فعلاً. لا ترفعه إلى Git.
 
-## 5. تطبيق Migrations
+## 5. تطبيق Migrations + إنشاء Buckets
 
 ```bash
-npx supabase link --project-ref <PROJECT_ID>
-npx supabase db push
+bunx supabase link --project-ref <PROJECT_ID>
+bunx supabase db push
 ```
+
+Migrations تنشئ تلقائياً buckets: `app-releases` و `db-backups`.
 
 ## 6. البناء
 
 ```bash
-npm run build
+bun run build
 ```
 
-النتيجة في `dist/`:
-- `dist/client/` — الأصول الثابتة
-- `dist/server/` — تطبيق Nitro
+الناتج في `.output/`:
+- `.output/server/index.mjs` — خادم Nitro
+- `.output/public/` — الأصول الثابتة
 
 ## 7. تشغيل دائم عبر PM2
 
 ```bash
-pm2 start "node dist/server/index.mjs" --name hn-db --cwd /var/www/hn-db
+pm2 start ".output/server/index.mjs" --name hn-db --cwd /var/www/hn-db --update-env
 pm2 save
-pm2 startup            # نفّذ السطر المطبوع لتفعيل البدء التلقائي
-pm2 logs hn-db         # متابعة السجلات
+pm2 startup
+pm2 logs hn-db
 ```
 
-التطبيق يستمع على `http://127.0.0.1:3000`.
+التطبيق يستمع على `PORT` (افتراضي 3000).
 
 ## 8. ربط الدومين عبر Nginx
 
@@ -71,8 +75,7 @@ pm2 logs hn-db         # متابعة السجلات
 server {
   listen 80;
   server_name hndb.example.com;
-
-  client_max_body_size 200M;   # رفع APK كبير
+  client_max_body_size 200M;
 
   location / {
     proxy_pass http://127.0.0.1:3000;
@@ -87,19 +90,16 @@ server {
 }
 ```
 
-فعّله:
-
 ```bash
 sudo ln -s /etc/nginx/sites-available/hn-db /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+sudo nginx -t && sudo systemctl reload nginx
 ```
 
 ## 9. SSL تلقائي عبر Let's Encrypt
 
 ```bash
 sudo certbot --nginx -d hndb.example.com
-sudo systemctl enable certbot.timer   # تجديد تلقائي
+sudo systemctl enable certbot.timer
 ```
 
 ## 10. الجدار الناري
@@ -114,16 +114,16 @@ sudo ufw enable
 
 ```bash
 cd /var/www/hn-db
-# ارفع النسخة الجديدة (scp أو git pull)
-npm ci
-npm run build
+# ارفع النسخة الجديدة
+bun install
+bun run build
 pm2 restart hn-db
 ```
 
 ## 12. النسخ الاحتياطي
 
-- **قاعدة البيانات:** Supabase تأخذ نسخاً تلقائية. يمكن أيضاً تصدير يدوي من `Backups` داخل HN-DB.
-- **ملفات APK:** مخزّنة في Supabase Storage (bucket: `app-releases`).
+- **قاعدة البيانات:** Supabase تأخذ نسخاً تلقائية + يدوياً من صفحة `Backups`.
+- **النسخ في Storage:** bucket `db-backups` (خاص، owner-only).
 - **ENV:** احتفظ بنسخة آمنة من `.env` خارج السيرفر.
 
 ## التحقق بعد النشر
@@ -133,3 +133,4 @@ pm2 restart hn-db
 - ✅ تسجيل الدخول يعمل
 - ✅ `pm2 list` يُظهر `hn-db` بحالة `online`
 - ✅ `GET /api/public/site-config?domain=...` يستجيب
+- ✅ Backups → New Backup → ملف JSON يُرفع إلى bucket `db-backups`
