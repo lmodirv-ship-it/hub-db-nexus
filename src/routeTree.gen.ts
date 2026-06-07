@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WebsitesRouteImport } from './routes/websites'
 import { Route as LogsRouteImport } from './routes/logs'
+import { Route as HealthRouteImport } from './routes/health'
 import { Route as ConnectionsRouteImport } from './routes/connections'
 import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppsRouteImport } from './routes/apps'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
 import { Route as DatabasesAddRouteImport } from './routes/databases.add'
@@ -28,6 +30,11 @@ const WebsitesRoute = WebsitesRouteImport.update({
 const LogsRoute = LogsRouteImport.update({
   id: '/logs',
   path: '/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthRoute = HealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnectionsRoute = ConnectionsRouteImport.update({
@@ -48,6 +55,11 @@ const AuthRoute = AuthRouteImport.update({
 const AppsRoute = AppsRouteImport.update({
   id: '/apps',
   path: '/apps',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -73,10 +85,12 @@ const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/apps': typeof AppsRoute
   '/auth': typeof AuthRoute
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
+  '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
@@ -85,10 +99,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/apps': typeof AppsRoute
   '/auth': typeof AuthRoute
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
+  '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
@@ -98,10 +114,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/apps': typeof AppsRoute
   '/auth': typeof AuthRoute
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
+  '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
@@ -112,10 +130,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alerts'
     | '/apps'
     | '/auth'
     | '/backups'
     | '/connections'
+    | '/health'
     | '/logs'
     | '/websites'
     | '/databases/add'
@@ -124,10 +144,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alerts'
     | '/apps'
     | '/auth'
     | '/backups'
     | '/connections'
+    | '/health'
     | '/logs'
     | '/websites'
     | '/databases/add'
@@ -136,10 +158,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/alerts'
     | '/apps'
     | '/auth'
     | '/backups'
     | '/connections'
+    | '/health'
     | '/logs'
     | '/websites'
     | '/databases/add'
@@ -149,10 +173,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsRoute: typeof AlertsRoute
   AppsRoute: typeof AppsRoute
   AuthRoute: typeof AuthRoute
   BackupsRoute: typeof BackupsRoute
   ConnectionsRoute: typeof ConnectionsRoute
+  HealthRoute: typeof HealthRoute
   LogsRoute: typeof LogsRoute
   WebsitesRoute: typeof WebsitesRoute
   DatabasesAddRoute: typeof DatabasesAddRoute
@@ -174,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/logs'
       fullPath: '/logs'
       preLoaderRoute: typeof LogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health': {
+      id: '/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connections': {
@@ -202,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/apps'
       fullPath: '/apps'
       preLoaderRoute: typeof AppsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -237,10 +277,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsRoute: AlertsRoute,
   AppsRoute: AppsRoute,
   AuthRoute: AuthRoute,
   BackupsRoute: BackupsRoute,
   ConnectionsRoute: ConnectionsRoute,
+  HealthRoute: HealthRoute,
   LogsRoute: LogsRoute,
   WebsitesRoute: WebsitesRoute,
   DatabasesAddRoute: DatabasesAddRoute,
@@ -250,3 +292,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

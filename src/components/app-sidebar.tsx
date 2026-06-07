@@ -1,19 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
-  Database,
-  PlusCircle,
-  Link2,
-  Archive,
-  ScrollText,
-  Server,
-  Globe,
-  Smartphone,
+  LayoutDashboard, Database, PlusCircle, Link2, Archive, ScrollText,
+  Server, Globe, Smartphone, Activity, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 const items = [
   { to: "/", label: "لوحة التحكم", icon: LayoutDashboard },
+  { to: "/health", label: "مراقب الحالة", icon: Activity },
+  { to: "/alerts", label: "التنبيهات", icon: Bell, badge: true as const },
   { to: "/databases", label: "قواعد البيانات", icon: Database },
   { to: "/databases/add", label: "إضافة قاعدة", icon: PlusCircle },
   { to: "/websites", label: "المواقع", icon: Globe },
@@ -25,6 +22,11 @@ const items = [
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const unread = useQuery({
+    queryKey: ["alerts-unread"],
+    queryFn: api.unreadAlertCount,
+    refetchInterval: 30_000,
+  });
 
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-l border-sidebar-border bg-sidebar text-sidebar-foreground">
@@ -45,6 +47,7 @@ export function AppSidebar() {
         {items.map((it) => {
           const active =
             it.to === "/" ? pathname === "/" : pathname === it.to || pathname.startsWith(it.to + "/");
+          const count = it.badge ? (unread.data ?? 0) : 0;
           return (
             <Link
               key={it.to}
@@ -58,7 +61,12 @@ export function AppSidebar() {
             >
               <it.icon className="h-4 w-4 shrink-0" />
               <span>{it.label}</span>
-              {active && <span className="mr-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+              {count > 0 && (
+                <span className="mr-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                  {count}
+                </span>
+              )}
+              {active && count === 0 && <span className="mr-auto h-1.5 w-1.5 rounded-full bg-primary" />}
             </Link>
           );
         })}
