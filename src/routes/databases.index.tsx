@@ -35,12 +35,6 @@ export const Route = createFileRoute("/databases/")({
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     Active: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
-    Error: "bg-destructive/15 text-destructive border-destructive/30",
-    Offline: "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
-  };
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    Active: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
     Slow: "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
     Error: "bg-destructive/15 text-destructive border-destructive/30",
     Offline: "bg-muted text-muted-foreground border-border",
