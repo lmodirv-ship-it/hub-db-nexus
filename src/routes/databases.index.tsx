@@ -13,13 +13,19 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { api } from "@/lib/api";
+import { api, downloadFile } from "@/lib/api";
 import { formatDate, formatSize, dbTypeColor } from "@/lib/format";
 import { toast } from "sonner";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Plug, Archive, Trash2, Plus, Search, Database as DbIcon, Loader2,
+  Download, Upload, MoreVertical, CalendarClock,
 } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenuSeparator, DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { useRef } from "react";
 
 export const Route = createFileRoute("/databases/")({
   head: () => ({ meta: [{ title: "قواعد البيانات — HN-DB" }] }),
@@ -29,12 +35,13 @@ export const Route = createFileRoute("/databases/")({
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     Active: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
+    Slow: "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
     Error: "bg-destructive/15 text-destructive border-destructive/30",
-    Offline: "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
+    Offline: "bg-muted text-muted-foreground border-border",
   };
-  const labels: Record<string, string> = { Active: "نشطة", Error: "خطأ", Offline: "متوقفة" };
+  const labels: Record<string, string> = { Active: "نشطة", Slow: "بطيئة", Error: "خطأ", Offline: "متوقفة" };
   return (
-    <Badge variant="outline" className={`${map[status]} font-medium`}>
+    <Badge variant="outline" className={`${map[status] ?? "bg-muted"} font-medium`}>
       <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
       {labels[status] ?? status}
     </Badge>
@@ -70,8 +77,29 @@ function DatabasesPage() {
     onError: (e: any) => toast.error(e?.message ?? "فشل"),
   });
 
+  const scheduleMut = useMutation({
+    mutationFn: ({ id, s }: { id: string; s: "off" | "daily" | "weekly" }) => api.setSchedule(id, s),
+    onSuccess: () => { invalidate(); toast.success("تم تحديث جدولة النسخ"); },
+  });
+  const importMut = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => api.importSql(id, file),
+    onSuccess: () => { invalidate(); toast.success("تم استيراد الملف"); },
+    onError: (e: any) => toast.error(e?.message ?? "فشل الاستيراد"),
+  });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const importTargetRef = useRef<string | null>(null);
+
+  const handleExport = async (id: string, kind: "json" | "sql") => {
+    try {
+      const res = kind === "json" ? await api.exportDb(id) : await api.exportSql(id);
+      downloadFile(res.filename, res.content, kind === "json" ? "application/json" : "application/sql");
+      toast.success("تم التصدير");
+    } catch (e: any) { toast.error(e?.message ?? "فشل"); }
+  };
+
   const databases = dbs.data ?? [];
   const websites = ws.data ?? [];
+
 
   const filtered = useMemo(
     () => databases.filter((d) =>
@@ -164,13 +192,35 @@ function DatabasesPage() {
                       <td className="p-3 text-xs text-muted-foreground">{formatDate(d.lastConnection)}</td>
                       <td className="p-3 text-xs text-muted-foreground">{formatDate(d.lastBackup)}</td>
                       <td className="p-3">
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 items-center">
                           <Button size="icon" variant="ghost" title="اختبار الاتصال" onClick={() => testMut.mutate(d.id)}>
                             <Plug className="h-4 w-4" />
                           </Button>
                           <Button size="icon" variant="ghost" title="نسخة احتياطية" onClick={() => backupMut.mutate(d.id)}>
                             <Archive className="h-4 w-4" />
                           </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="icon" variant="ghost" title="المزيد"><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuLabel>تصدير / استيراد</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={() => handleExport(d.id, "json")}>
+                                <Download className="h-4 w-4 ml-2" /> تصدير JSON
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleExport(d.id, "sql")}>
+                                <Download className="h-4 w-4 ml-2" /> تصدير SQL
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { importTargetRef.current = d.id; fileInputRef.current?.click(); }}>
+                                <Upload className="h-4 w-4 ml-2" /> استيراد SQL
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuLabel className="flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" /> جدولة النسخ ({d.backupSchedule})</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "off" })}>إيقاف</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "daily" })}>يومياً</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "weekly" })}>أسبوعياً</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" title="حذف">
@@ -197,6 +247,7 @@ function DatabasesPage() {
                           </AlertDialog>
                         </div>
                       </td>
+
                     </tr>
                   );
                 })}
@@ -209,6 +260,18 @@ function DatabasesPage() {
             </table>
           </div>
         </Card>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".sql,text/plain"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            const id = importTargetRef.current;
+            if (f && id) importMut.mutate({ id, file: f });
+            e.target.value = "";
+          }}
+        />
       </div>
     </>
   );

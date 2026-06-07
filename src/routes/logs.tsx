@@ -27,18 +27,21 @@ function LogsPage() {
 
   const [q, setQ] = useState("");
   const [result, setResult] = useState("all");
+  const [range, setRange] = useState("all");
 
-  const filtered = useMemo(
-    () => data.filter((l) =>
+  const filtered = useMemo(() => {
+    const now = Date.now();
+    const cutoff = range === "24h" ? now - 86400000 : range === "7d" ? now - 7 * 86400000 : range === "30d" ? now - 30 * 86400000 : 0;
+    return data.filter((l) =>
       (result === "all" || l.result === result) &&
-      (q === "" || l.action.includes(q))
-    ),
-    [data, q, result]
-  );
+      (cutoff === 0 || new Date(l.createdAt).getTime() >= cutoff) &&
+      (q === "" || l.action.toLowerCase().includes(q.toLowerCase()))
+    );
+  }, [data, q, result, range]);
 
   return (
     <>
-      <PageHeader title="سجل العمليات" subtitle="كل العمليات على قواعد البيانات مسجلة هنا" />
+      <PageHeader title="سجل العمليات" subtitle={`${filtered.length} عملية من إجمالي ${data.length}`} />
       <div className="flex-1 p-6 space-y-4">
         <Card className="p-4 bg-card">
           <div className="flex flex-wrap gap-3">
@@ -47,11 +50,20 @@ function LogsPage() {
               <Input placeholder="ابحث في العمليات..." value={q} onChange={(e) => setQ(e.target.value)} className="pr-9" />
             </div>
             <Select value={result} onValueChange={setResult}>
-              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">كل النتائج</SelectItem>
                 <SelectItem value="Success">ناجحة</SelectItem>
                 <SelectItem value="Failed">فاشلة</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={range} onValueChange={setRange}>
+              <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">كل الفترات</SelectItem>
+                <SelectItem value="24h">آخر 24 ساعة</SelectItem>
+                <SelectItem value="7d">آخر 7 أيام</SelectItem>
+                <SelectItem value="30d">آخر 30 يوم</SelectItem>
               </SelectContent>
             </Select>
           </div>
