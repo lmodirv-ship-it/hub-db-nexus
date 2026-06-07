@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_releases: {
+        Row: {
+          created_at: string
+          file_path: string | null
+          file_size_bytes: number
+          file_type: string
+          id: string
+          notes: string | null
+          owner_id: string
+          released_at: string
+          status: string
+          version_code: number
+          version_name: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_path?: string | null
+          file_size_bytes?: number
+          file_type?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          released_at?: string
+          status?: string
+          version_code?: number
+          version_name: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string | null
+          file_size_bytes?: number
+          file_type?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          released_at?: string
+          status?: string
+          version_code?: number
+          version_name?: string
+          website_id?: string
+        }
+        Relationships: []
+      }
       backups: {
         Row: {
           created_at: string
