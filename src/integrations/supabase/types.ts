@@ -14,16 +14,214 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      backups: {
+        Row: {
+          created_at: string
+          database_id: string
+          id: string
+          owner_id: string
+          size_mb: number
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          database_id: string
+          id?: string
+          owner_id: string
+          size_mb?: number
+          status?: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          database_id?: string
+          id?: string
+          owner_id?: string
+          size_mb?: number
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backups_database_id_fkey"
+            columns: ["database_id"]
+            isOneToOne: false
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      databases: {
+        Row: {
+          connection_id: string
+          created_at: string
+          engine: string
+          host: string
+          id: string
+          last_backup: string | null
+          last_connection: string | null
+          name: string
+          owner_id: string
+          port: number
+          size_mb: number
+          status: string
+          username: string
+          website_id: string | null
+        }
+        Insert: {
+          connection_id?: string
+          created_at?: string
+          engine?: string
+          host?: string
+          id?: string
+          last_backup?: string | null
+          last_connection?: string | null
+          name: string
+          owner_id: string
+          port?: number
+          size_mb?: number
+          status?: string
+          username?: string
+          website_id?: string | null
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          engine?: string
+          host?: string
+          id?: string
+          last_backup?: string | null
+          last_connection?: string | null
+          name?: string
+          owner_id?: string
+          port?: number
+          size_mb?: number
+          status?: string
+          username?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "databases_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logs: {
+        Row: {
+          action: string
+          created_at: string
+          database_id: string | null
+          id: string
+          owner_id: string
+          result: string
+          website_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          database_id?: string | null
+          id?: string
+          owner_id: string
+          result?: string
+          website_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          database_id?: string | null
+          id?: string
+          owner_id?: string
+          result?: string
+          website_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      websites: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          name: string
+          owner_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          name: string
+          owner_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +348,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
