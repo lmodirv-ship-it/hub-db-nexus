@@ -76,8 +76,29 @@ function DatabasesPage() {
     onError: (e: any) => toast.error(e?.message ?? "فشل"),
   });
 
+  const scheduleMut = useMutation({
+    mutationFn: ({ id, s }: { id: string; s: "off" | "daily" | "weekly" }) => api.setSchedule(id, s),
+    onSuccess: () => { invalidate(); toast.success("تم تحديث جدولة النسخ"); },
+  });
+  const importMut = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => api.importSql(id, file),
+    onSuccess: () => { invalidate(); toast.success("تم استيراد الملف"); },
+    onError: (e: any) => toast.error(e?.message ?? "فشل الاستيراد"),
+  });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const importTargetRef = useRef<string | null>(null);
+
+  const handleExport = async (id: string, kind: "json" | "sql") => {
+    try {
+      const res = kind === "json" ? await api.exportDb(id) : await api.exportSql(id);
+      downloadFile(res.filename, res.content, kind === "json" ? "application/json" : "application/sql");
+      toast.success("تم التصدير");
+    } catch (e: any) { toast.error(e?.message ?? "فشل"); }
+  };
+
   const databases = dbs.data ?? [];
   const websites = ws.data ?? [];
+
 
   const filtered = useMemo(
     () => databases.filter((d) =>
