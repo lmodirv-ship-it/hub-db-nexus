@@ -9,38 +9,128 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LogsRouteImport } from './routes/logs'
+import { Route as ConnectionsRouteImport } from './routes/connections'
+import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
+import { Route as DatabasesAddRouteImport } from './routes/databases.add'
 
+const LogsRoute = LogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectionsRoute = ConnectionsRouteImport.update({
+  id: '/connections',
+  path: '/connections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackupsRoute = BackupsRouteImport.update({
+  id: '/backups',
+  path: '/backups',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DatabasesIndexRoute = DatabasesIndexRouteImport.update({
+  id: '/databases/',
+  path: '/databases/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatabasesAddRoute = DatabasesAddRouteImport.update({
+  id: '/databases/add',
+  path: '/databases/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/backups': typeof BackupsRoute
+  '/connections': typeof ConnectionsRoute
+  '/logs': typeof LogsRoute
+  '/databases/add': typeof DatabasesAddRoute
+  '/databases/': typeof DatabasesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/backups': typeof BackupsRoute
+  '/connections': typeof ConnectionsRoute
+  '/logs': typeof LogsRoute
+  '/databases/add': typeof DatabasesAddRoute
+  '/databases': typeof DatabasesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/backups': typeof BackupsRoute
+  '/connections': typeof ConnectionsRoute
+  '/logs': typeof LogsRoute
+  '/databases/add': typeof DatabasesAddRoute
+  '/databases/': typeof DatabasesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/backups'
+    | '/connections'
+    | '/logs'
+    | '/databases/add'
+    | '/databases/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/backups'
+    | '/connections'
+    | '/logs'
+    | '/databases/add'
+    | '/databases'
+  id:
+    | '__root__'
+    | '/'
+    | '/backups'
+    | '/connections'
+    | '/logs'
+    | '/databases/add'
+    | '/databases/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BackupsRoute: typeof BackupsRoute
+  ConnectionsRoute: typeof ConnectionsRoute
+  LogsRoute: typeof LogsRoute
+  DatabasesAddRoute: typeof DatabasesAddRoute
+  DatabasesIndexRoute: typeof DatabasesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/logs': {
+      id: '/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof LogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connections': {
+      id: '/connections'
+      path: '/connections'
+      fullPath: '/connections'
+      preLoaderRoute: typeof ConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backups': {
+      id: '/backups'
+      path: '/backups'
+      fullPath: '/backups'
+      preLoaderRoute: typeof BackupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +138,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/databases/': {
+      id: '/databases/'
+      path: '/databases'
+      fullPath: '/databases/'
+      preLoaderRoute: typeof DatabasesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/databases/add': {
+      id: '/databases/add'
+      path: '/databases/add'
+      fullPath: '/databases/add'
+      preLoaderRoute: typeof DatabasesAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BackupsRoute: BackupsRoute,
+  ConnectionsRoute: ConnectionsRoute,
+  LogsRoute: LogsRoute,
+  DatabasesAddRoute: DatabasesAddRoute,
+  DatabasesIndexRoute: DatabasesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
