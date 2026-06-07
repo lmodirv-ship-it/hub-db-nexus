@@ -13,13 +13,19 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { api } from "@/lib/api";
+import { api, downloadFile } from "@/lib/api";
 import { formatDate, formatSize, dbTypeColor } from "@/lib/format";
 import { toast } from "sonner";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Plug, Archive, Trash2, Plus, Search, Database as DbIcon, Loader2,
+  Download, Upload, MoreVertical, CalendarClock,
 } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenuSeparator, DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { useRef } from "react";
 
 export const Route = createFileRoute("/databases/")({
   head: () => ({ meta: [{ title: "قواعد البيانات — HN-DB" }] }),
