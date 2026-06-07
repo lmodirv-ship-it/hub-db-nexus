@@ -13,11 +13,12 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { storeActions, useStore } from "@/lib/store";
+import { api } from "@/lib/api";
 import { formatDate, formatSize, dbTypeColor } from "@/lib/format";
 import { toast } from "sonner";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
-  Eye, Plug, Archive, RotateCcw, Trash2, Plus, Search, Database as DbIcon,
+  Plug, Archive, Trash2, Plus, Search, Database as DbIcon, Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/databases/")({
@@ -35,20 +36,46 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <Badge variant="outline" className={`${map[status]} font-medium`}>
       <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
-      {labels[status]}
+      {labels[status] ?? status}
     </Badge>
   );
 }
 
 function DatabasesPage() {
-  const { databases, websites } = useStore();
+  const qc = useQueryClient();
+  const dbs = useQuery({ queryKey: ["databases"], queryFn: api.listDatabases });
+  const ws = useQuery({ queryKey: ["websites"], queryFn: api.listWebsites });
+
   const [q, setQ] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
 
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["databases"] });
+    qc.invalidateQueries({ queryKey: ["logs"] });
+  };
+
+  const delMut = useMutation({
+    mutationFn: api.deleteDatabase,
+    onSuccess: () => { invalidate(); toast.success("تم الحذف"); },
+    onError: (e: any) => toast.error(e?.message ?? "فشل الحذف"),
+  });
+  const testMut = useMutation({
+    mutationFn: api.testConnection,
+    onSuccess: (ok) => { invalidate(); ok ? toast.success("الاتصال ناجح") : toast.error("فشل الاتصال"); },
+  });
+  const backupMut = useMutation({
+    mutationFn: (id: string) => api.createBackup(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["backups"] }); invalidate(); toast.success("تم إنشاء نسخة احتياطية"); },
+    onError: (e: any) => toast.error(e?.message ?? "فشل"),
+  });
+
+  const databases = dbs.data ?? [];
+  const websites = ws.data ?? [];
+
   const filtered = useMemo(
     () => databases.filter((d) =>
-      (type === "all" || d.type === type) &&
+      (type === "all" || d.engine === type) &&
       (status === "all" || d.status === status) &&
       (q === "" || d.name.toLowerCase().includes(q.toLowerCase()))
     ),
@@ -110,7 +137,10 @@ function DatabasesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((d) => {
+                {dbs.isLoading && (
+                  <tr><td colSpan={8} className="p-12 text-center"><Loader2 className="h-5 w-5 animate-spin inline" /></td></tr>
+                )}
+                {!dbs.isLoading && filtered.map((d) => {
                   const site = websites.find((w) => w.id === d.websiteId);
                   return (
                     <tr key={d.id} className="border-t border-border hover:bg-accent/30">
@@ -128,45 +158,19 @@ function DatabasesPage() {
                       <td className="p-3">
                         {site ? <span className="text-foreground">{site.name}</span> : <span className="text-muted-foreground">— غير مرتبطة</span>}
                       </td>
-                      <td className={`p-3 font-semibold ${dbTypeColor[d.type]}`}>{d.type}</td>
+                      <td className={`p-3 font-semibold ${dbTypeColor[d.engine]}`}>{d.engine}</td>
                       <td className="p-3"><StatusBadge status={d.status} /></td>
-                      <td className="p-3 font-mono text-xs">{formatSize(d.sizeMB)}</td>
+                      <td className="p-3 font-mono text-xs">{formatSize(d.sizeMb)}</td>
                       <td className="p-3 text-xs text-muted-foreground">{formatDate(d.lastConnection)}</td>
                       <td className="p-3 text-xs text-muted-foreground">{formatDate(d.lastBackup)}</td>
                       <td className="p-3">
                         <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" title="عرض" onClick={() => toast.info(`القاعدة: ${d.name}`)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" title="اختبار اتصال" onClick={() => {
-                            const ok = storeActions.testConnection(d.id);
-                            ok ? toast.success("الاتصال ناجح") : toast.error("فشل الاتصال");
-                          }}>
+                          <Button size="icon" variant="ghost" title="اختبار الاتصال" onClick={() => testMut.mutate(d.id)}>
                             <Plug className="h-4 w-4" />
                           </Button>
-                          <Button size="icon" variant="ghost" title="نسخة احتياطية" onClick={() => {
-                            storeActions.createBackup(d.id);
-                            toast.success("تم إنشاء نسخة احتياطية");
-                          }}>
+                          <Button size="icon" variant="ghost" title="نسخة احتياطية" onClick={() => backupMut.mutate(d.id)}>
                             <Archive className="h-4 w-4" />
                           </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="icon" variant="ghost" title="استعادة"><RotateCcw className="h-4 w-4" /></Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>تأكيد الاستعادة</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  سيتم استعادة آخر نسخة احتياطية لـ <b>{d.name}</b>. لا يمكن التراجع عن هذا الإجراء.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => toast.success("تمت الاستعادة")}>تأكيد</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" title="حذف">
@@ -184,7 +188,7 @@ function DatabasesPage() {
                                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
                                 <AlertDialogAction
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  onClick={() => { storeActions.deleteDatabase(d.id); toast.success("تم الحذف"); }}
+                                  onClick={() => delMut.mutate(d.id)}
                                 >
                                   حذف
                                 </AlertDialogAction>
@@ -196,8 +200,10 @@ function DatabasesPage() {
                     </tr>
                   );
                 })}
-                {filtered.length === 0 && (
-                  <tr><td colSpan={8} className="p-12 text-center text-muted-foreground">لا توجد نتائج</td></tr>
+                {!dbs.isLoading && filtered.length === 0 && (
+                  <tr><td colSpan={8} className="p-12 text-center text-muted-foreground">
+                    {databases.length === 0 ? "لم تقم بإنشاء أي قاعدة بعد. ابدأ بإضافة واحدة." : "لا توجد نتائج"}
+                  </td></tr>
                 )}
               </tbody>
             </table>

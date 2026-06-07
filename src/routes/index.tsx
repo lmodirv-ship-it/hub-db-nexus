@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
-import { useStore } from "@/lib/store";
+import { api } from "@/lib/api";
 import { formatDate, formatSize } from "@/lib/format";
+import { useQuery } from "@tanstack/react-query";
 import {
   Database,
   CheckCircle2,
@@ -19,18 +20,9 @@ export const Route = createFileRoute("/")({
   component: Dashboard,
 });
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  tone = "default",
-  hint,
-}: {
-  label: string;
-  value: string | number;
-  icon: any;
-  tone?: "default" | "success" | "warning" | "destructive" | "primary";
-  hint?: string;
+function StatCard({ label, value, icon: Icon, tone = "default", hint }: {
+  label: string; value: string | number; icon: any;
+  tone?: "default" | "success" | "warning" | "destructive" | "primary"; hint?: string;
 }) {
   const tones: Record<string, string> = {
     default: "text-foreground",
@@ -56,29 +48,38 @@ function StatCard({
 }
 
 function Dashboard() {
-  const { databases, backups, logs, websites } = useStore();
-  const active = databases.filter((d) => d.status === "Active").length;
-  const errors = databases.filter((d) => d.status === "Error").length;
-  const offline = databases.filter((d) => d.status === "Offline").length;
-  const linked = databases.filter((d) => d.websiteId).length;
-  const unlinked = databases.length - linked;
-  const totalSize = databases.reduce((a, b) => a + b.sizeMB, 0);
-  const recentBackups = [...backups].sort((a, b) => +new Date(b.date) - +new Date(a.date)).slice(0, 5);
-  const recentErrors = logs.filter((l) => l.result === "Failed").slice(0, 5);
+  const databases = useQuery({ queryKey: ["databases"], queryFn: api.listDatabases });
+  const websites = useQuery({ queryKey: ["websites"], queryFn: api.listWebsites });
+  const backups = useQuery({ queryKey: ["backups"], queryFn: api.listBackups });
+  const logs = useQuery({ queryKey: ["logs"], queryFn: () => api.listLogs(20) });
+
+  const dbs = databases.data ?? [];
+  const ws = websites.data ?? [];
+  const bs = backups.data ?? [];
+  const ls = logs.data ?? [];
+
+  const active = dbs.filter((d) => d.status === "Active").length;
+  const errors = dbs.filter((d) => d.status === "Error").length;
+  const offline = dbs.filter((d) => d.status === "Offline").length;
+  const linked = dbs.filter((d) => d.websiteId).length;
+  const unlinked = dbs.length - linked;
+  const totalSize = dbs.reduce((a, b) => a + b.sizeMb, 0);
+  const recentBackups = bs.slice(0, 5);
+  const recentErrors = ls.filter((l) => l.result === "Failed").slice(0, 5);
 
   return (
     <>
       <PageHeader title="لوحة التحكم" subtitle="نظرة شاملة على قواعد البيانات الموصولة بـ TVCC" />
       <div className="flex-1 p-6 space-y-6">
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatCard label="إجمالي القواعد" value={databases.length} icon={Database} tone="primary" />
+          <StatCard label="إجمالي القواعد" value={dbs.length} icon={Database} tone="primary" />
           <StatCard label="نشطة" value={active} icon={CheckCircle2} tone="success" />
           <StatCard label="بها أخطاء" value={errors} icon={AlertTriangle} tone="destructive" />
           <StatCard label="متوقفة" value={offline} icon={PowerOff} tone="warning" />
-          <StatCard label="مرتبطة بمواقع" value={linked} icon={Link2} tone="success" hint={`${websites.length} موقع متاح`} />
+          <StatCard label="مرتبطة بمواقع" value={linked} icon={Link2} tone="success" hint={`${ws.length} موقع متاح`} />
           <StatCard label="غير مرتبطة" value={unlinked} icon={Unlink} tone="warning" />
           <StatCard label="الحجم الإجمالي" value={formatSize(totalSize)} icon={HardDrive} />
-          <StatCard label="نسخ احتياطية" value={backups.length} icon={Archive} tone="primary" />
+          <StatCard label="نسخ احتياطية" value={bs.length} icon={Archive} tone="primary" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -88,15 +89,18 @@ function Dashboard() {
               <Link to="/backups" className="text-xs text-primary hover:underline">عرض الكل</Link>
             </div>
             <div className="space-y-3">
+              {recentBackups.length === 0 && (
+                <div className="text-sm text-muted-foreground py-6 text-center">لا توجد نسخ احتياطية بعد</div>
+              )}
               {recentBackups.map((b) => {
-                const db = databases.find((d) => d.id === b.databaseId);
+                const db = dbs.find((d) => d.id === b.databaseId);
                 return (
                   <div key={b.id} className="flex items-center justify-between rounded-lg border border-border bg-background/40 px-4 py-3">
                     <div className="min-w-0">
                       <div className="font-medium text-sm truncate">{db?.name ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground">{b.type} · {formatSize(b.sizeMB)}</div>
+                      <div className="text-xs text-muted-foreground">{b.type} · {formatSize(b.sizeMb)}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">{formatDate(b.date)}</div>
+                    <div className="text-xs text-muted-foreground">{formatDate(b.createdAt)}</div>
                   </div>
                 );
               })}
@@ -113,14 +117,14 @@ function Dashboard() {
                 <div className="text-sm text-muted-foreground py-6 text-center">لا توجد أخطاء حديثة</div>
               )}
               {recentErrors.map((l) => {
-                const db = databases.find((d) => d.id === l.databaseId);
+                const db = dbs.find((d) => d.id === l.databaseId);
                 return (
                   <div key={l.id} className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
                     <div className="min-w-0">
                       <div className="font-medium text-sm">{l.action}</div>
-                      <div className="text-xs text-muted-foreground">{db?.name ?? "—"} · {l.user}</div>
+                      <div className="text-xs text-muted-foreground">{db?.name ?? "—"}</div>
                     </div>
-                    <div className="text-xs text-destructive">{formatDate(l.date)}</div>
+                    <div className="text-xs text-destructive">{formatDate(l.createdAt)}</div>
                   </div>
                 );
               })}

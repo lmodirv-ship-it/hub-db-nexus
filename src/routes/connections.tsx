@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { storeActions, useStore } from "@/lib/store";
+import { api } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
-import { Link2, Plug, Globe, Database as DbIcon, CheckCircle2, AlertCircle } from "lucide-react";
+import { Link2, Plug, Globe, Database as DbIcon, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/connections")({
   head: () => ({ meta: [{ title: "ربط المواقع — HN-DB" }] }),
@@ -17,14 +18,33 @@ export const Route = createFileRoute("/connections")({
 });
 
 function ConnectionsPage() {
-  const { databases, websites } = useStore();
+  const qc = useQueryClient();
+  const dbs = useQuery({ queryKey: ["databases"], queryFn: api.listDatabases });
+  const ws = useQuery({ queryKey: ["websites"], queryFn: api.listWebsites });
+  const databases = dbs.data ?? [];
+  const websites = ws.data ?? [];
+
   const [siteId, setSiteId] = useState<string>("");
   const [dbId, setDbId] = useState<string>("");
 
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["databases"] });
+    qc.invalidateQueries({ queryKey: ["logs"] });
+  };
+
+  const linkMut = useMutation({
+    mutationFn: ({ dbId, siteId }: { dbId: string; siteId: string | null }) => api.linkWebsite(dbId, siteId),
+    onSuccess: () => { invalidate(); toast.success("تم الحفظ"); },
+    onError: (e: any) => toast.error(e?.message ?? "فشل"),
+  });
+  const testMut = useMutation({
+    mutationFn: api.testConnection,
+    onSuccess: (ok) => { invalidate(); ok ? toast.success("الاتصال ناجح") : toast.error("فشل الاتصال"); },
+  });
+
   const link = () => {
     if (!dbId || !siteId) { toast.error("اختر الموقع والقاعدة"); return; }
-    storeActions.linkWebsite(dbId, siteId);
-    toast.success("تم الربط بنجاح");
+    linkMut.mutate({ dbId, siteId });
   };
 
   return (
@@ -43,12 +63,21 @@ function ConnectionsPage() {
             <Select value={dbId} onValueChange={setDbId}>
               <SelectTrigger><SelectValue placeholder="اختر القاعدة" /></SelectTrigger>
               <SelectContent>
-                {databases.map((d) => <SelectItem key={d.id} value={d.id}>{d.name} ({d.type})</SelectItem>)}
+                {databases.map((d) => <SelectItem key={d.id} value={d.id}>{d.name} ({d.engine})</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button onClick={link}>ربط</Button>
+            <Button onClick={link} disabled={linkMut.isPending}>ربط</Button>
           </div>
+          {(websites.length === 0 || databases.length === 0) && (
+            <p className="mt-3 text-xs text-muted-foreground">تحتاج لإنشاء موقع وقاعدة بيانات أولًا.</p>
+          )}
         </Card>
+
+        {dbs.isLoading && <div className="text-center p-10"><Loader2 className="h-6 w-6 animate-spin inline" /></div>}
+
+        {!dbs.isLoading && databases.length === 0 && (
+          <Card className="p-10 text-center bg-card text-muted-foreground">لا توجد قواعد بيانات لعرضها.</Card>
+        )}
 
         <div className="grid gap-4">
           {databases.map((d) => {
@@ -63,7 +92,7 @@ function ConnectionsPage() {
                     </div>
                     <div>
                       <div className="font-semibold">{d.name}</div>
-                      <div className="text-xs text-muted-foreground">{d.type}</div>
+                      <div className="text-xs text-muted-foreground">{d.engine}</div>
                     </div>
                   </div>
 
@@ -75,7 +104,7 @@ function ConnectionsPage() {
                     </div>
                     <div>
                       <div className="font-semibold">{site?.name ?? <span className="text-muted-foreground">غير مرتبط</span>}</div>
-                      <div className="text-xs text-muted-foreground">{site?.url ?? "—"}</div>
+                      <div className="text-xs text-muted-foreground">{site?.domain ?? "—"}</div>
                     </div>
                   </div>
 
@@ -83,7 +112,7 @@ function ConnectionsPage() {
                     {ok ? (
                       <><CheckCircle2 className="h-4 w-4 text-[color:var(--success)]" /><span>متصل</span></>
                     ) : (
-                      <><AlertCircle className="h-4 w-4 text-destructive" /><span>خلل</span></>
+                      <><AlertCircle className="h-4 w-4 text-destructive" /><span>تنبيه</span></>
                     )}
                   </div>
 
@@ -92,17 +121,11 @@ function ConnectionsPage() {
                   </div>
 
                   <div className="mr-auto flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => {
-                      const r = storeActions.testConnection(d.id);
-                      r ? toast.success("الاتصال ناجح") : toast.error("فشل الاتصال");
-                    }}>
+                    <Button size="sm" variant="outline" onClick={() => testMut.mutate(d.id)}>
                       <Plug className="h-4 w-4 ml-1" /> اختبار
                     </Button>
                     {site && (
-                      <Button size="sm" variant="ghost" onClick={() => {
-                        storeActions.linkWebsite(d.id, null);
-                        toast.success("تم فصل الربط");
-                      }}>فصل</Button>
+                      <Button size="sm" variant="ghost" onClick={() => linkMut.mutate({ dbId: d.id, siteId: null })}>فصل</Button>
                     )}
                   </div>
                 </div>

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WebsitesRouteImport } from './routes/websites'
 import { Route as LogsRouteImport } from './routes/logs'
 import { Route as ConnectionsRouteImport } from './routes/connections'
 import { Route as BackupsRouteImport } from './routes/backups'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
 import { Route as DatabasesAddRouteImport } from './routes/databases.add'
 
+const WebsitesRoute = WebsitesRouteImport.update({
+  id: '/websites',
+  path: '/websites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LogsRoute = LogsRouteImport.update({
   id: '/logs',
   path: '/logs',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
   '/logs': typeof LogsRoute
+  '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
   '/logs': typeof LogsRoute
+  '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases': typeof DatabasesIndexRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
   '/logs': typeof LogsRoute
+  '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/connections'
     | '/logs'
+    | '/websites'
     | '/databases/add'
     | '/databases/'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/connections'
     | '/logs'
+    | '/websites'
     | '/databases/add'
     | '/databases'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/connections'
     | '/logs'
+    | '/websites'
     | '/databases/add'
     | '/databases/'
   fileRoutesById: FileRoutesById
@@ -117,12 +129,20 @@ export interface RootRouteChildren {
   BackupsRoute: typeof BackupsRoute
   ConnectionsRoute: typeof ConnectionsRoute
   LogsRoute: typeof LogsRoute
+  WebsitesRoute: typeof WebsitesRoute
   DatabasesAddRoute: typeof DatabasesAddRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/websites': {
+      id: '/websites'
+      path: '/websites'
+      fullPath: '/websites'
+      preLoaderRoute: typeof WebsitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/logs': {
       id: '/logs'
       path: '/logs'
@@ -181,9 +201,20 @@ const rootRouteChildren: RootRouteChildren = {
   BackupsRoute: BackupsRoute,
   ConnectionsRoute: ConnectionsRoute,
   LogsRoute: LogsRoute,
+  WebsitesRoute: WebsitesRoute,
   DatabasesAddRoute: DatabasesAddRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
