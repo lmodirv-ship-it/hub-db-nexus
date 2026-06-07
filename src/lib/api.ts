@@ -125,16 +125,43 @@ export const api = {
     return api.checkHealth(databaseId);
   },
   async checkHealth(databaseId: string): Promise<boolean> {
+    // Real reachability probe: HTTPS HEAD to host:port with timeout.
+    // Worker runtime cannot open raw TCP sockets, so we use fetch.
+    // For pure DB ports (e.g. 5432) this will return a network error,
+    // which we record honestly as "Offline" with the real error message.
+    const { data: row } = await supabase
+      .from("databases")
+      .select("host, port")
+      .eq("id", databaseId)
+      .single();
+    if (!row) return false;
+
     const start = Date.now();
-    // Simulated health check (no real external DB connection from worker)
-    await new Promise((r) => setTimeout(r, 200 + Math.random() * 600));
-    const ms = Date.now() - start;
-    const roll = Math.random();
     let status: DbStatus = "Active";
     let lastError: string | null = null;
-    if (roll < 0.08) { status = "Error"; lastError = "Connection refused (timeout)"; }
-    else if (roll < 0.15) { status = "Offline"; lastError = "Host unreachable"; }
-    else if (ms > 600) { status = "Slow"; lastError = `Response time ${ms}ms`; }
+
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const url = `https://${row.host}:${row.port}/`;
+      await fetch(url, { method: "HEAD", signal: ctrl.signal, mode: "no-cors" });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes("abort") || msg.includes("timeout")) {
+        status = "Offline";
+        lastError = `Timeout بعد 5 ثوانٍ (${row.host}:${row.port})`;
+      } else {
+        status = "Error";
+        lastError = msg.slice(0, 200);
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+    const ms = Date.now() - start;
+    if (status === "Active" && ms > 1500) {
+      status = "Slow";
+      lastError = `زمن استجابة عالٍ: ${ms}ms`;
+    }
 
     await supabase.from("databases").update({
       last_connection: new Date().toISOString(),
@@ -155,7 +182,7 @@ export const api = {
     return status === "Active" || status === "Slow";
   },
   async checkAllHealth(ids: string[]) {
-    for (const id of ids) await api.checkHealth(id);
+    await Promise.all(ids.map((id) => api.checkHealth(id)));
   },
   async setSchedule(databaseId: string, schedule: "off" | "daily" | "weekly") {
     const next = schedule === "off" ? null :
@@ -197,22 +224,65 @@ export const api = {
   },
   async createBackup(databaseId: string, type: "Full" | "Incremental" = "Full"): Promise<Backup> {
     const owner_id = await uid();
-    const { data: db } = await supabase.from("databases").select("size_mb").eq("id", databaseId).single();
-    const size = Math.max(10, Math.round((db?.size_mb ?? 100) * 0.95));
-    const ok = Math.random() > 0.05;
-    const { data, error } = await supabase.from("backups").insert({
-      owner_id, database_id: databaseId, type, size_mb: size,
-      status: ok ? "Completed" : "Failed",
+    const { data: db, error: dbErr } = await supabase
+      .from("databases")
+      .select("*")
+      .eq("id", databaseId)
+      .single();
+    if (dbErr || !db) throw dbErr ?? new Error("قاعدة بيانات غير موجودة");
+
+    // Build a real backup snapshot from the metadata we own, plus prior backups history.
+    const { data: history } = await supabase
+      .from("backups")
+      .select("*")
+      .eq("database_id", databaseId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const payload = {
+      format: "hndb-snapshot-v1",
+      type,
+      createdAt: new Date().toISOString(),
+      database: db,
+      history: history ?? [],
+    };
+    const json = JSON.stringify(payload, null, 2);
+    const sizeBytes = new Blob([json]).size;
+    const sizeMb = Math.max(1, Math.round(sizeBytes / (1024 * 1024) * 100) / 100);
+
+    const path = `${owner_id}/${databaseId}/${Date.now()}.json`;
+    const { error: upErr } = await supabase.storage
+      .from("db-backups")
+      .upload(path, new Blob([json], { type: "application/json" }), {
+        contentType: "application/json",
+        upsert: false,
+      });
+
+    let status: "Completed" | "Failed" = "Completed";
+    let storedPath: string | null = path;
+    if (upErr) {
+      status = "Failed";
+      storedPath = null;
+    }
+
+    const { data: row, error } = await supabase.from("backups").insert({
+      owner_id, database_id: databaseId, type,
+      size_mb: status === "Completed" ? sizeMb : 0,
+      status,
     }).select("*").single();
     if (error) throw error;
-    if (ok) {
+
+    if (status === "Completed") {
       await supabase.from("databases").update({ last_backup: new Date().toISOString() }).eq("id", databaseId);
-      await log("إنشاء نسخة احتياطية", { databaseId });
+      await log(`إنشاء نسخة احتياطية (${sizeMb}MB) → ${storedPath}`, { databaseId });
     } else {
-      await log("فشل إنشاء نسخة احتياطية", { databaseId, result: "Failed" });
-      await createAlert({ type: "backup", severity: "critical", databaseId, message: "فشلت عملية النسخ الاحتياطي" });
+      await log(`فشل إنشاء نسخة احتياطية: ${upErr?.message ?? "خطأ غير معروف"}`, { databaseId, result: "Failed" });
+      await createAlert({
+        type: "backup", severity: "critical", databaseId,
+        message: `فشلت عملية النسخ الاحتياطي: ${upErr?.message ?? "خطأ غير معروف"}`,
+      });
     }
-    return mapBackup(data);
+    return mapBackup(row);
   },
   async restoreBackup(backupId: string) {
     const { data } = await supabase.from("backups").select("database_id").eq("id", backupId).single();
@@ -226,12 +296,42 @@ export const api = {
   async exportBackupJson(backupId: string): Promise<{ filename: string; content: string }> {
     const { data: b } = await supabase.from("backups").select("*").eq("id", backupId).single();
     const { data: db } = await supabase.from("databases").select("*").eq("id", b!.database_id).single();
-    const payload = {
-      backup: b, database: db,
-      exportedAt: new Date().toISOString(),
-      format: "hndb-snapshot-v1",
-    };
-    return { filename: `backup-${db!.name}-${b!.id.slice(0, 8)}.json`, content: JSON.stringify(payload, null, 2) };
+    // Try to fetch the actual stored snapshot from storage; fall back to metadata-only.
+    const owner_id = await uid();
+    const prefix = `${owner_id}/${b!.database_id}/`;
+    const { data: list } = await supabase.storage.from("db-backups").list(`${owner_id}/${b!.database_id}`, {
+      limit: 100, sortBy: { column: "created_at", order: "desc" },
+    });
+    let content: string | null = null;
+    if (list && list.length) {
+      const created = new Date(b!.created_at).getTime();
+      const closest = list.reduce((best, item) => {
+        const t = item.name.startsWith(String(created).slice(0, 10))
+          ? Number(item.name.split(".")[0])
+          : Number(item.name.split(".")[0]);
+        if (Number.isNaN(t)) return best;
+        const dist = Math.abs(t - created);
+        return !best || dist < best.dist ? { name: item.name, dist } : best;
+      }, null as null | { name: string; dist: number });
+      if (closest) {
+        const { data: signed } = await supabase.storage.from("db-backups").createSignedUrl(prefix + closest.name, 60);
+        if (signed?.signedUrl) {
+          try {
+            const res = await fetch(signed.signedUrl);
+            if (res.ok) content = await res.text();
+          } catch { /* ignore, fall back */ }
+        }
+      }
+    }
+    if (!content) {
+      content = JSON.stringify({
+        backup: b, database: db,
+        exportedAt: new Date().toISOString(),
+        format: "hndb-snapshot-v1-metadata-only",
+        note: "ملف النسخة الأصلي غير موجود في التخزين — هذا تصدير ميتاداتا فقط.",
+      }, null, 2);
+    }
+    return { filename: `backup-${db!.name}-${b!.id.slice(0, 8)}.json`, content };
   },
 
   // Import / Export DB
