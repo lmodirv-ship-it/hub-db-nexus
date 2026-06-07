@@ -53,16 +53,16 @@ export function AppSidebar() {
               key={it.to}
               to={it.to}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
                 active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-[inset_3px_0_0_0_var(--primary),0_0_24px_-10px_var(--primary)]"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
               )}
             >
-              <it.icon className="h-4 w-4 shrink-0" />
+              <it.icon className={cn("h-4 w-4 shrink-0", active && "text-[color:var(--primary-glow)]")} />
               <span>{it.label}</span>
               {count > 0 && (
-                <span className="mr-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                <span className="mr-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold shadow-[0_0_12px_-2px_var(--destructive)]">
                   {count}
                 </span>
               )}
