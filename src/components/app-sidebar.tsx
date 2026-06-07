@@ -7,6 +7,7 @@ import {
   Archive,
   ScrollText,
   Server,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ const items = [
   { to: "/", label: "لوحة التحكم", icon: LayoutDashboard },
   { to: "/databases", label: "قواعد البيانات", icon: Database },
   { to: "/databases/add", label: "إضافة قاعدة", icon: PlusCircle },
+  { to: "/websites", label: "المواقع", icon: Globe },
   { to: "/connections", label: "ربط المواقع", icon: Link2 },
   { to: "/backups", label: "النسخ الاحتياطية", icon: Archive },
   { to: "/logs", label: "السجلات", icon: ScrollText },

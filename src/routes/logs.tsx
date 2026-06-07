@@ -3,13 +3,13 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useStore } from "@/lib/store";
+import { api } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import { Search, CheckCircle2, XCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Search, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/logs")({
   head: () => ({ meta: [{ title: "السجلات — HN-DB" }] }),
@@ -17,16 +17,23 @@ export const Route = createFileRoute("/logs")({
 });
 
 function LogsPage() {
-  const { logs, databases, websites } = useStore();
+  const logs = useQuery({ queryKey: ["logs"], queryFn: () => api.listLogs(500) });
+  const dbs = useQuery({ queryKey: ["databases"], queryFn: api.listDatabases });
+  const ws = useQuery({ queryKey: ["websites"], queryFn: api.listWebsites });
+
+  const data = logs.data ?? [];
+  const databases = dbs.data ?? [];
+  const websites = ws.data ?? [];
+
   const [q, setQ] = useState("");
   const [result, setResult] = useState("all");
 
   const filtered = useMemo(
-    () => logs.filter((l) =>
+    () => data.filter((l) =>
       (result === "all" || l.result === result) &&
-      (q === "" || l.action.includes(q) || l.user.includes(q))
+      (q === "" || l.action.includes(q))
     ),
-    [logs, q, result]
+    [data, q, result]
   );
 
   return (
@@ -56,7 +63,6 @@ function LogsPage() {
               <thead className="bg-background/40 text-muted-foreground text-xs uppercase">
                 <tr>
                   <th className="text-right p-3 font-medium">العملية</th>
-                  <th className="text-right p-3 font-medium">المستخدم</th>
                   <th className="text-right p-3 font-medium">القاعدة</th>
                   <th className="text-right p-3 font-medium">الموقع</th>
                   <th className="text-right p-3 font-medium">النتيجة</th>
@@ -64,15 +70,15 @@ function LogsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((l) => {
+                {logs.isLoading && (
+                  <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="h-5 w-5 animate-spin inline" /></td></tr>
+                )}
+                {!logs.isLoading && filtered.map((l) => {
                   const db = databases.find((d) => d.id === l.databaseId);
                   const site = websites.find((w) => w.id === l.websiteId);
                   return (
                     <tr key={l.id} className="border-t border-border hover:bg-accent/30">
                       <td className="p-3 font-medium">{l.action}</td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="font-normal">{l.user}</Badge>
-                      </td>
                       <td className="p-3 text-muted-foreground">{db?.name ?? "—"}</td>
                       <td className="p-3 text-muted-foreground">{site?.name ?? "—"}</td>
                       <td className="p-3">
@@ -86,12 +92,12 @@ function LogsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="p-3 text-muted-foreground text-xs">{formatDate(l.date)}</td>
+                      <td className="p-3 text-muted-foreground text-xs">{formatDate(l.createdAt)}</td>
                     </tr>
                   );
                 })}
-                {filtered.length === 0 && (
-                  <tr><td colSpan={6} className="p-12 text-center text-muted-foreground">لا توجد سجلات</td></tr>
+                {!logs.isLoading && filtered.length === 0 && (
+                  <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">لا توجد سجلات</td></tr>
                 )}
               </tbody>
             </table>

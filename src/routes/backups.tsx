@@ -8,10 +8,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useStore } from "@/lib/store";
+import { api } from "@/lib/api";
 import { formatDate, formatSize } from "@/lib/format";
 import { toast } from "sonner";
-import { Download, RotateCcw, Archive } from "lucide-react";
+import { RotateCcw, Archive, Trash2, Loader2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/backups")({
   head: () => ({ meta: [{ title: "النسخ الاحتياطية — HN-DB" }] }),
@@ -26,8 +27,22 @@ const statusTone: Record<string, string> = {
 const statusLabel: Record<string, string> = { Completed: "مكتملة", Failed: "فاشلة", Running: "قيد التنفيذ" };
 
 function BackupsPage() {
-  const { backups, databases } = useStore();
-  const sorted = [...backups].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  const qc = useQueryClient();
+  const bs = useQuery({ queryKey: ["backups"], queryFn: api.listBackups });
+  const dbs = useQuery({ queryKey: ["databases"], queryFn: api.listDatabases });
+  const backups = bs.data ?? [];
+  const databases = dbs.data ?? [];
+
+  const restoreMut = useMutation({
+    mutationFn: api.restoreBackup,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["logs"] }); toast.success("تمت الاستعادة"); },
+    onError: (e: any) => toast.error(e?.message ?? "فشل"),
+  });
+  const delMut = useMutation({
+    mutationFn: api.deleteBackup,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["backups"] }); qc.invalidateQueries({ queryKey: ["logs"] }); toast.success("تم الحذف"); },
+    onError: (e: any) => toast.error(e?.message ?? "فشل"),
+  });
 
   return (
     <>
@@ -47,7 +62,13 @@ function BackupsPage() {
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((b) => {
+                {bs.isLoading && (
+                  <tr><td colSpan={6} className="p-12 text-center"><Loader2 className="h-5 w-5 animate-spin inline" /></td></tr>
+                )}
+                {!bs.isLoading && backups.length === 0 && (
+                  <tr><td colSpan={6} className="p-12 text-center text-muted-foreground">لا توجد نسخ احتياطية بعد. أنشئ نسخة من صفحة قواعد البيانات.</td></tr>
+                )}
+                {backups.map((b) => {
                   const db = databases.find((d) => d.id === b.databaseId);
                   return (
                     <tr key={b.id} className="border-t border-border hover:bg-accent/30">
@@ -58,16 +79,13 @@ function BackupsPage() {
                         </div>
                       </td>
                       <td className="p-3">{b.type === "Full" ? "كاملة" : "تزايدية"}</td>
-                      <td className="p-3 text-muted-foreground text-xs">{formatDate(b.date)}</td>
-                      <td className="p-3 font-mono text-xs">{formatSize(b.sizeMB)}</td>
+                      <td className="p-3 text-muted-foreground text-xs">{formatDate(b.createdAt)}</td>
+                      <td className="p-3 font-mono text-xs">{formatSize(b.sizeMb)}</td>
                       <td className="p-3">
                         <Badge variant="outline" className={statusTone[b.status]}>{statusLabel[b.status]}</Badge>
                       </td>
                       <td className="p-3">
                         <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" onClick={() => toast.success("بدأ التنزيل")}>
-                            <Download className="h-4 w-4 ml-1" /> تنزيل
-                          </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="sm" variant="ghost" disabled={b.status !== "Completed"}>
@@ -78,14 +96,32 @@ function BackupsPage() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>تأكيد الاستعادة</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  سيتم استعادة قاعدة <b>{db?.name}</b> إلى حالة هذه النسخة. لا يمكن التراجع.
+                                  سيتم استعادة قاعدة <b>{db?.name}</b>. لا يمكن التراجع.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => toast.success("تمت الاستعادة بنجاح")}>
-                                  تأكيد الاستعادة
-                                </AlertDialogAction>
+                                <AlertDialogAction onClick={() => restoreMut.mutate(b.id)}>تأكيد</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4 ml-1" /> حذف
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>حذف النسخة</AlertDialogTitle>
+                                <AlertDialogDescription>سيتم حذف هذه النسخة الاحتياطية نهائيًا.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => delMut.mutate(b.id)}
+                                >حذف</AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>

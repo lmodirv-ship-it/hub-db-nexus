@@ -4,12 +4,15 @@ import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/hooks/use-auth";
+import { AuthGate } from "@/components/auth-gate";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -60,17 +63,39 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function Shell() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAuth = pathname === "/auth";
+
+  if (isAuth) {
+    return (
+      <>
+        <Outlet />
+        <Toaster richColors position="top-center" dir="rtl" />
+      </>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen w-full bg-background text-foreground">
+      <AppSidebar />
+      <main className="flex-1 min-w-0 flex flex-col">
+        <Outlet />
+      </main>
+      <Toaster richColors position="top-center" dir="rtl" />
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen w-full bg-background text-foreground">
-        <AppSidebar />
-        <main className="flex-1 min-w-0 flex flex-col">
-          <Outlet />
-        </main>
-        <Toaster richColors position="top-center" dir="rtl" />
-      </div>
+      <AuthProvider>
+        <AuthGate>
+          <Shell />
+        </AuthGate>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
