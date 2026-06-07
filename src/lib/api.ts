@@ -177,4 +177,78 @@ export const api = {
     if (error) throw error;
     return (data ?? []).map(mapLog);
   },
+
+  // App releases (APK/AAB)
+  async listReleases(websiteId?: string): Promise<AppRelease[]> {
+    let q = supabase.from("app_releases").select("*").order("released_at", { ascending: false });
+    if (websiteId) q = q.eq("website_id", websiteId);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapRelease);
+  },
+  async uploadRelease(input: {
+    websiteId: string;
+    file: File;
+    fileType: "apk" | "aab";
+    versionName: string;
+    versionCode: number;
+    notes?: string;
+  }): Promise<AppRelease> {
+    const owner_id = await uid();
+    const safeName = input.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${owner_id}/${input.websiteId}/${input.fileType}/v${input.versionCode}-${Date.now()}-${safeName}`;
+    const { error: upErr } = await supabase.storage.from("app-releases").upload(path, input.file, {
+      contentType: input.file.type || "application/octet-stream",
+      upsert: false,
+    });
+    if (upErr) throw upErr;
+    const { data, error } = await supabase.from("app_releases").insert({
+      owner_id,
+      website_id: input.websiteId,
+      version_name: input.versionName,
+      version_code: input.versionCode,
+      file_type: input.fileType,
+      file_path: path,
+      file_size_bytes: input.file.size,
+      notes: input.notes ?? null,
+    }).select("*").single();
+    if (error) throw error;
+    await log(`رفع إصدار ${input.fileType.toUpperCase()} v${input.versionName}`, { websiteId: input.websiteId });
+    return mapRelease(data);
+  },
+  async deleteRelease(id: string) {
+    const { data: rel } = await supabase.from("app_releases").select("file_path, website_id").eq("id", id).single();
+    if (rel?.file_path) await supabase.storage.from("app-releases").remove([rel.file_path]);
+    const { error } = await supabase.from("app_releases").delete().eq("id", id);
+    if (error) throw error;
+    await log("حذف إصدار تطبيق", { websiteId: rel?.website_id ?? null });
+  },
+  async getReleaseDownloadUrl(path: string): Promise<string> {
+    const { data, error } = await supabase.storage.from("app-releases").createSignedUrl(path, 3600);
+    if (error) throw error;
+    return data.signedUrl;
+  },
 };
+
+export interface AppRelease {
+  id: string;
+  websiteId: string;
+  versionName: string;
+  versionCode: number;
+  fileType: "apk" | "aab";
+  filePath: string | null;
+  fileSizeBytes: number;
+  status: string;
+  notes: string | null;
+  releasedAt: string;
+  createdAt: string;
+}
+
+function mapRelease(r: any): AppRelease {
+  return {
+    id: r.id, websiteId: r.website_id, versionName: r.version_name,
+    versionCode: r.version_code, fileType: r.file_type, filePath: r.file_path,
+    fileSizeBytes: r.file_size_bytes, status: r.status, notes: r.notes,
+    releasedAt: r.released_at, createdAt: r.created_at,
+  };
+}
