@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          created_at: string
+          database_id: string | null
+          id: string
+          message: string
+          owner_id: string
+          read: boolean
+          severity: string
+          type: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          database_id?: string | null
+          id?: string
+          message: string
+          owner_id: string
+          read?: boolean
+          severity?: string
+          type: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          database_id?: string | null
+          id?: string
+          message?: string
+          owner_id?: string
+          read?: boolean
+          severity?: string
+          type?: string
+          website_id?: string | null
+        }
+        Relationships: []
+      }
       app_releases: {
         Row: {
           created_at: string
@@ -99,14 +135,18 @@ export type Database = {
       }
       databases: {
         Row: {
+          backup_schedule: string
           connection_id: string
           created_at: string
           engine: string
           host: string
           id: string
           last_backup: string | null
+          last_check_ms: number | null
           last_connection: string | null
+          last_error: string | null
           name: string
+          next_backup_at: string | null
           owner_id: string
           port: number
           size_mb: number
@@ -115,14 +155,18 @@ export type Database = {
           website_id: string | null
         }
         Insert: {
+          backup_schedule?: string
           connection_id?: string
           created_at?: string
           engine?: string
           host?: string
           id?: string
           last_backup?: string | null
+          last_check_ms?: number | null
           last_connection?: string | null
+          last_error?: string | null
           name: string
+          next_backup_at?: string | null
           owner_id: string
           port?: number
           size_mb?: number
@@ -131,14 +175,18 @@ export type Database = {
           website_id?: string | null
         }
         Update: {
+          backup_schedule?: string
           connection_id?: string
           created_at?: string
           engine?: string
           host?: string
           id?: string
           last_backup?: string | null
+          last_check_ms?: number | null
           last_connection?: string | null
+          last_error?: string | null
           name?: string
+          next_backup_at?: string | null
           owner_id?: string
           port?: number
           size_mb?: number
