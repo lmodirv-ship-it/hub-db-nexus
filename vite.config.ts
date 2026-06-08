@@ -12,10 +12,4 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  // Nitro prerender config: generate static HTML for the root route
-  nitro: {
-    prerender: {
-      routes: ["/"],
-    },
-  },
 });
