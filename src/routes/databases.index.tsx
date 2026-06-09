@@ -204,38 +204,24 @@ function DatabasesPage() {
                       <td className="p-3 text-xs text-muted-foreground">{formatDate(d.lastBackup)}</td>
                       <td className="p-3">
                         <div className="flex gap-1 items-center">
-                          <Button size="icon" variant="ghost" title="اختبار الاتصال" onClick={() => testMut.mutate(d.id)}>
+                          <Button size="icon" variant="ghost" aria-label="اختبار الاتصال" title="اختبار الاتصال" onClick={() => testMut.mutate(d.id)}>
                             <Plug className="h-4 w-4" />
+                            <span className="sr-only">اختبار الاتصال</span>
                           </Button>
-                          <Button size="icon" variant="ghost" title="نسخة احتياطية" onClick={() => backupMut.mutate(d.id)}>
+                          <Button size="icon" variant="ghost" aria-label="إنشاء نسخة احتياطية" title="نسخة احتياطية" onClick={() => backupMut.mutate(d.id)}>
                             <Archive className="h-4 w-4" />
+                            <span className="sr-only">إنشاء نسخة احتياطية</span>
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button size="icon" variant="ghost" title="المزيد"><MoreVertical className="h-4 w-4" /></Button>
+                              <Button size="icon" variant="ghost" aria-label="المزيد من الإجراءات" title="المزيد"><MoreVertical className="h-4 w-4" /><span className="sr-only">المزيد من الإجراءات</span></Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
-                              <DropdownMenuLabel>تصدير / استيراد</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleExport(d.id, "json")}>
-                                <Download className="h-4 w-4 ml-2" /> تصدير JSON
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleExport(d.id, "sql")}>
-                                <Download className="h-4 w-4 ml-2" /> تصدير SQL
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => { importTargetRef.current = d.id; fileInputRef.current?.click(); }}>
-                                <Upload className="h-4 w-4 ml-2" /> استيراد SQL
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuLabel className="flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" /> جدولة النسخ ({d.backupSchedule})</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "off" })}>إيقاف</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "daily" })}>يومياً</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "weekly" })}>أسبوعياً</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+...
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" title="حذف">
+                              <Button size="icon" variant="ghost" aria-label="حذف القاعدة" className="text-destructive hover:text-destructive" title="حذف">
                                 <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">حذف القاعدة</span>
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
