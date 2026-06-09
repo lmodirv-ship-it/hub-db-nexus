@@ -16,7 +16,18 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "لوحة التحكم — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'لوحة التحكم — HN-DB' },
+      { name: "description", content: 'لوحة تحكم HN-DB لإدارة جميع قواعد بياناتك ومواقعك من واجهة واحدة آمنة وسريعة.' },
+      { property: "og:title", content: 'لوحة التحكم — HN-DB' },
+      { property: "og:description", content: 'لوحة تحكم HN-DB لإدارة جميع قواعد بياناتك ومواقعك من واجهة واحدة آمنة وسريعة.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/' },
+      { name: "twitter:title", content: 'لوحة التحكم — HN-DB' },
+      { name: "twitter:description", content: 'لوحة تحكم HN-DB لإدارة جميع قواعد بياناتك ومواقعك من واجهة واحدة آمنة وسريعة.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/' }],
+  }),
   component: Dashboard,
 });
 

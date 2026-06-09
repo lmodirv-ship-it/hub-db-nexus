@@ -13,7 +13,18 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/connections")({
-  head: () => ({ meta: [{ title: "ربط المواقع — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'ربط المواقع — HN-DB' },
+      { name: "description", content: 'ربط مواقعك بقواعد البيانات الخاصة بها وإدارة جميع الاتصالات بشكل مركزي.' },
+      { property: "og:title", content: 'ربط المواقع — HN-DB' },
+      { property: "og:description", content: 'ربط مواقعك بقواعد البيانات الخاصة بها وإدارة جميع الاتصالات بشكل مركزي.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/connections' },
+      { name: "twitter:title", content: 'ربط المواقع — HN-DB' },
+      { name: "twitter:description", content: 'ربط مواقعك بقواعد البيانات الخاصة بها وإدارة جميع الاتصالات بشكل مركزي.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/connections' }],
+  }),
   component: ConnectionsPage,
 });
 

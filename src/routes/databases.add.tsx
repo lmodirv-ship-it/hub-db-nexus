@@ -14,7 +14,18 @@ import { ShieldCheck, Lock } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/databases/add")({
-  head: () => ({ meta: [{ title: "إضافة قاعدة بيانات — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'إضافة قاعدة بيانات — HN-DB' },
+      { name: "description", content: 'إضافة قاعدة بيانات جديدة إلى HN-DB وربطها بأحد مواقعك بخطوات بسيطة.' },
+      { property: "og:title", content: 'إضافة قاعدة بيانات — HN-DB' },
+      { property: "og:description", content: 'إضافة قاعدة بيانات جديدة إلى HN-DB وربطها بأحد مواقعك بخطوات بسيطة.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/databases/add' },
+      { name: "twitter:title", content: 'إضافة قاعدة بيانات — HN-DB' },
+      { name: "twitter:description", content: 'إضافة قاعدة بيانات جديدة إلى HN-DB وربطها بأحد مواقعك بخطوات بسيطة.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/databases/add' }],
+  }),
   component: AddDb,
 });
 

@@ -15,7 +15,18 @@ import { RotateCcw, Archive, Trash2, Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/backups")({
-  head: () => ({ meta: [{ title: "النسخ الاحتياطية — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'النسخ الاحتياطية — HN-DB' },
+      { name: "description", content: 'إنشاء واستعادة وجدولة النسخ الاحتياطية لجميع قواعد بياناتك بسهولة وأمان.' },
+      { property: "og:title", content: 'النسخ الاحتياطية — HN-DB' },
+      { property: "og:description", content: 'إنشاء واستعادة وجدولة النسخ الاحتياطية لجميع قواعد بياناتك بسهولة وأمان.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/backups' },
+      { name: "twitter:title", content: 'النسخ الاحتياطية — HN-DB' },
+      { name: "twitter:description", content: 'إنشاء واستعادة وجدولة النسخ الاحتياطية لجميع قواعد بياناتك بسهولة وأمان.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/backups' }],
+  }),
   component: BackupsPage,
 });
 

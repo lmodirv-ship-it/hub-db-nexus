@@ -10,7 +10,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Check, CheckCheck, Loader2, Trash2, AlertTriangle, Info, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/alerts")({
-  head: () => ({ meta: [{ title: "التنبيهات — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'التنبيهات — HN-DB' },
+      { name: "description", content: 'تنبيهات HN-DB الفورية حول صحة قواعد البيانات والنسخ الاحتياطية والأخطاء الحرجة.' },
+      { property: "og:title", content: 'التنبيهات — HN-DB' },
+      { property: "og:description", content: 'تنبيهات HN-DB الفورية حول صحة قواعد البيانات والنسخ الاحتياطية والأخطاء الحرجة.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/alerts' },
+      { name: "twitter:title", content: 'التنبيهات — HN-DB' },
+      { name: "twitter:description", content: 'تنبيهات HN-DB الفورية حول صحة قواعد البيانات والنسخ الاحتياطية والأخطاء الحرجة.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/alerts' }],
+  }),
   component: AlertsPage,
 });
 
