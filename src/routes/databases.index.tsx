@@ -216,7 +216,24 @@ function DatabasesPage() {
                             <DropdownMenuTrigger asChild>
                               <Button size="icon" variant="ghost" aria-label="المزيد من الإجراءات" title="المزيد"><MoreVertical className="h-4 w-4" /><span className="sr-only">المزيد من الإجراءات</span></Button>
                             </DropdownMenuTrigger>
-...
+                            <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuLabel>تصدير / استيراد</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={() => handleExport(d.id, "json")}>
+                                <Download className="h-4 w-4 ml-2" /> تصدير JSON
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleExport(d.id, "sql")}>
+                                <Download className="h-4 w-4 ml-2" /> تصدير SQL
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { importTargetRef.current = d.id; fileInputRef.current?.click(); }}>
+                                <Upload className="h-4 w-4 ml-2" /> استيراد SQL
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuLabel className="flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" /> جدولة النسخ ({d.backupSchedule})</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "off" })}>إيقاف</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "daily" })}>يومياً</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => scheduleMut.mutate({ id: d.id, s: "weekly" })}>أسبوعياً</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="icon" variant="ghost" aria-label="حذف القاعدة" className="text-destructive hover:text-destructive" title="حذف">
