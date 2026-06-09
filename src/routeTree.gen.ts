@@ -24,7 +24,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppsRouteImport } from './routes/apps'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
+import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as DatabasesAddRouteImport } from './routes/databases.add'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
 
@@ -103,9 +105,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DatabasesIndexRoute = DatabasesIndexRouteImport.update({
   id: '/databases/',
   path: '/databases/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
+  id: '/projects/$projectId',
+  path: '/projects/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DatabasesAddRoute = DatabasesAddRouteImport.update({
@@ -136,7 +148,9 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/databases/': typeof DatabasesIndexRoute
+  '/projects/': typeof ProjectsIndexRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRoutesByTo {
@@ -156,7 +170,9 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/databases': typeof DatabasesIndexRoute
+  '/projects': typeof ProjectsIndexRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRoutesById {
@@ -177,7 +193,9 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/databases/': typeof DatabasesIndexRoute
+  '/projects/': typeof ProjectsIndexRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRouteTypes {
@@ -199,7 +217,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
+    | '/projects/$projectId'
     | '/databases/'
+    | '/projects/'
     | '/api/public/site-config'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -219,7 +239,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
+    | '/projects/$projectId'
     | '/databases'
+    | '/projects'
     | '/api/public/site-config'
   id:
     | '__root__'
@@ -239,7 +261,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
+    | '/projects/$projectId'
     | '/databases/'
+    | '/projects/'
     | '/api/public/site-config'
   fileRoutesById: FileRoutesById
 }
@@ -260,7 +284,9 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WebsitesRoute: typeof WebsitesRoute
   DatabasesAddRoute: typeof DatabasesAddRoute
+  ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
+  ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
 }
 
@@ -371,11 +397,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/': {
+      id: '/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof ProjectsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/databases/': {
       id: '/databases/'
       path: '/databases'
       fullPath: '/databases/'
       preLoaderRoute: typeof DatabasesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId': {
+      id: '/projects/$projectId'
+      path: '/projects/$projectId'
+      fullPath: '/projects/$projectId'
+      preLoaderRoute: typeof ProjectsProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/databases/add': {
@@ -412,7 +452,9 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WebsitesRoute: WebsitesRoute,
   DatabasesAddRoute: DatabasesAddRoute,
+  ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
+  ProjectsIndexRoute: ProjectsIndexRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
 }
 export const routeTree = rootRouteImport
