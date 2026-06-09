@@ -13,6 +13,7 @@ import { Route as WebsitesRouteImport } from './routes/websites'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LogsRouteImport } from './routes/logs'
 import { Route as HealthRouteImport } from './routes/health'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConnectionsRouteImport } from './routes/connections'
 import { Route as BackupsRouteImport } from './routes/backups'
@@ -42,6 +43,11 @@ const LogsRoute = LogsRouteImport.update({
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
   path: '/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
   '/dashboard': typeof DashboardRoute
+  '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
   '/dashboard': typeof DashboardRoute
+  '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
   '/dashboard': typeof DashboardRoute
+  '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/connections'
     | '/dashboard'
+    | '/features'
     | '/health'
     | '/logs'
     | '/sitemap.xml'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/connections'
     | '/dashboard'
+    | '/features'
     | '/health'
     | '/logs'
     | '/sitemap.xml'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/connections'
     | '/dashboard'
+    | '/features'
     | '/health'
     | '/logs'
     | '/sitemap.xml'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   BackupsRoute: typeof BackupsRoute
   ConnectionsRoute: typeof ConnectionsRoute
   DashboardRoute: typeof DashboardRoute
+  FeaturesRoute: typeof FeaturesRoute
   HealthRoute: typeof HealthRoute
   LogsRoute: typeof LogsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/health'
       fullPath: '/health'
       preLoaderRoute: typeof HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   BackupsRoute: BackupsRoute,
   ConnectionsRoute: ConnectionsRoute,
   DashboardRoute: DashboardRoute,
+  FeaturesRoute: FeaturesRoute,
   HealthRoute: HealthRoute,
   LogsRoute: LogsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -334,3 +355,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
