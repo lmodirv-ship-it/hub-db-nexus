@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hub-db-nexus.lovable.app/sitemap.xml

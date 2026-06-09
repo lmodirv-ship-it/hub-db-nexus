@@ -12,7 +12,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/logs")({
-  head: () => ({ meta: [{ title: "السجلات — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'السجلات — HN-DB' },
+      { name: "description", content: 'سجلات تفصيلية لكل العمليات على قواعد البيانات والمواقع والتطبيقات.' },
+      { property: "og:title", content: 'السجلات — HN-DB' },
+      { property: "og:description", content: 'سجلات تفصيلية لكل العمليات على قواعد البيانات والمواقع والتطبيقات.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/logs' },
+      { name: "twitter:title", content: 'السجلات — HN-DB' },
+      { name: "twitter:description", content: 'سجلات تفصيلية لكل العمليات على قواعد البيانات والمواقع والتطبيقات.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/logs' }],
+  }),
   component: LogsPage,
 });
 

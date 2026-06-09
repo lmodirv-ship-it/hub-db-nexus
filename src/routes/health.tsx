@@ -10,7 +10,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, Loader2, RefreshCw, Database as DbIcon, AlertTriangle, CheckCircle2, Clock, WifiOff } from "lucide-react";
 
 export const Route = createFileRoute("/health")({
-  head: () => ({ meta: [{ title: "حالة القواعد — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'حالة القواعد — HN-DB' },
+      { name: "description", content: 'فحص حالة الاتصال والأداء لجميع قواعد بياناتك في الوقت الحقيقي.' },
+      { property: "og:title", content: 'حالة القواعد — HN-DB' },
+      { property: "og:description", content: 'فحص حالة الاتصال والأداء لجميع قواعد بياناتك في الوقت الحقيقي.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/health' },
+      { name: "twitter:title", content: 'حالة القواعد — HN-DB' },
+      { name: "twitter:description", content: 'فحص حالة الاتصال والأداء لجميع قواعد بياناتك في الوقت الحقيقي.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/health' }],
+  }),
   component: HealthPage,
 });
 

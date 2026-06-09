@@ -28,7 +28,18 @@ import {
 import { useRef } from "react";
 
 export const Route = createFileRoute("/databases/")({
-  head: () => ({ meta: [{ title: "قواعد البيانات — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'قواعد البيانات — HN-DB' },
+      { name: "description", content: 'عرض وإدارة جميع قواعد البيانات MySQL و PostgreSQL و MongoDB المتصلة بحسابك.' },
+      { property: "og:title", content: 'قواعد البيانات — HN-DB' },
+      { property: "og:description", content: 'عرض وإدارة جميع قواعد البيانات MySQL و PostgreSQL و MongoDB المتصلة بحسابك.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/databases' },
+      { name: "twitter:title", content: 'قواعد البيانات — HN-DB' },
+      { name: "twitter:description", content: 'عرض وإدارة جميع قواعد البيانات MySQL و PostgreSQL و MongoDB المتصلة بحسابك.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/databases' }],
+  }),
   component: DatabasesPage,
 });
 

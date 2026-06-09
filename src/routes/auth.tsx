@@ -10,7 +10,18 @@ import { toast } from "sonner";
 import { Server, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "تسجيل الدخول — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'تسجيل الدخول — HN-DB' },
+      { name: "description", content: 'تسجيل الدخول الآمن إلى مركز إدارة قواعد البيانات HN-DB.' },
+      { property: "og:title", content: 'تسجيل الدخول — HN-DB' },
+      { property: "og:description", content: 'تسجيل الدخول الآمن إلى مركز إدارة قواعد البيانات HN-DB.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/auth' },
+      { name: "twitter:title", content: 'تسجيل الدخول — HN-DB' },
+      { name: "twitter:description", content: 'تسجيل الدخول الآمن إلى مركز إدارة قواعد البيانات HN-DB.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/auth' }],
+  }),
   component: AuthPage,
 });
 

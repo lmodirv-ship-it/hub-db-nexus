@@ -18,7 +18,18 @@ import { Globe, Plus, Trash2, Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/websites")({
-  head: () => ({ meta: [{ title: "المواقع — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'المواقع — HN-DB' },
+      { name: "description", content: 'إدارة جميع المواقع التي يديرها HN-DB ومتابعة قواعد بياناتها وتطبيقاتها.' },
+      { property: "og:title", content: 'المواقع — HN-DB' },
+      { property: "og:description", content: 'إدارة جميع المواقع التي يديرها HN-DB ومتابعة قواعد بياناتها وتطبيقاتها.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/websites' },
+      { name: "twitter:title", content: 'المواقع — HN-DB' },
+      { name: "twitter:description", content: 'إدارة جميع المواقع التي يديرها HN-DB ومتابعة قواعد بياناتها وتطبيقاتها.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/websites' }],
+  }),
   component: WebsitesPage,
 });
 

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WebsitesRouteImport } from './routes/websites'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LogsRouteImport } from './routes/logs'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as ConnectionsRouteImport } from './routes/connections'
@@ -25,6 +26,11 @@ import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/sit
 const WebsitesRoute = WebsitesRouteImport.update({
   id: '/websites',
   path: '/websites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogsRoute = LogsRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/connections': typeof ConnectionsRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/connections': typeof ConnectionsRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases': typeof DatabasesIndexRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/connections': typeof ConnectionsRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
   '/databases/': typeof DatabasesIndexRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/connections'
     | '/health'
     | '/logs'
+    | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
     | '/databases/'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/connections'
     | '/health'
     | '/logs'
+    | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
     | '/databases'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/connections'
     | '/health'
     | '/logs'
+    | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
     | '/databases/'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   ConnectionsRoute: typeof ConnectionsRoute
   HealthRoute: typeof HealthRoute
   LogsRoute: typeof LogsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WebsitesRoute: typeof WebsitesRoute
   DatabasesAddRoute: typeof DatabasesAddRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/websites'
       fullPath: '/websites'
       preLoaderRoute: typeof WebsitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/logs': {
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConnectionsRoute: ConnectionsRoute,
   HealthRoute: HealthRoute,
   LogsRoute: LogsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   WebsitesRoute: WebsitesRoute,
   DatabasesAddRoute: DatabasesAddRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
@@ -292,13 +313,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -22,7 +22,18 @@ import { Smartphone, Upload, Trash2, Loader2, Download, Package, FileArchive } f
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/apps")({
-  head: () => ({ meta: [{ title: "APK Manager — HN-DB" }] }),
+  head: () => ({
+    meta: [
+      { title: 'APK Manager — HN-DB' },
+      { name: "description", content: 'إدارة إصدارات تطبيقات الأندرويد APK و AAB المرتبطة بمواقعك من مكان واحد.' },
+      { property: "og:title", content: 'APK Manager — HN-DB' },
+      { property: "og:description", content: 'إدارة إصدارات تطبيقات الأندرويد APK و AAB المرتبطة بمواقعك من مكان واحد.' },
+      { property: "og:url", content: 'https://hub-db-nexus.lovable.app/apps' },
+      { name: "twitter:title", content: 'APK Manager — HN-DB' },
+      { name: "twitter:description", content: 'إدارة إصدارات تطبيقات الأندرويد APK و AAB المرتبطة بمواقعك من مكان واحد.' },
+    ],
+    links: [{ rel: "canonical", href: 'https://hub-db-nexus.lovable.app/apps' }],
+  }),
   component: AppsPage,
 });
 
