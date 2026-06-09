@@ -133,6 +133,59 @@ export type Database = {
           },
         ]
       }
+      clips: {
+        Row: {
+          created_at: string
+          duration_sec: number
+          id: string
+          metadata: Json
+          order_index: number
+          owner_id: string
+          project_id: string
+          source_url: string | null
+          status: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_sec?: number
+          id?: string
+          metadata?: Json
+          order_index?: number
+          owner_id: string
+          project_id: string
+          source_url?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_sec?: number
+          id?: string
+          metadata?: Json
+          order_index?: number
+          owner_id?: string
+          project_id?: string
+          source_url?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clips_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       databases: {
         Row: {
           backup_schedule: string
@@ -204,6 +257,72 @@ export type Database = {
           },
         ]
       }
+      jobs: {
+        Row: {
+          clip_id: string | null
+          created_at: string
+          error: string | null
+          finished_at: string | null
+          id: string
+          owner_id: string
+          payload: Json
+          progress: number
+          project_id: string | null
+          result: Json | null
+          started_at: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          clip_id?: string | null
+          created_at?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          owner_id: string
+          payload?: Json
+          progress?: number
+          project_id?: string | null
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          clip_id?: string | null
+          created_at?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          owner_id?: string
+          payload?: Json
+          progress?: number
+          project_id?: string | null
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_clip_id_fkey"
+            columns: ["clip_id"]
+            isOneToOne: false
+            referencedRelation: "clips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logs: {
         Row: {
           action: string
@@ -254,6 +373,47 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_content: {
         Row: {
