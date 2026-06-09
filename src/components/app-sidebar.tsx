@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 const items = [
-  { to: "/", label: "لوحة التحكم", icon: LayoutDashboard },
+  { to: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
   { to: "/health", label: "مراقب الحالة", icon: Activity },
   { to: "/alerts", label: "التنبيهات", icon: Bell, badge: true as const },
   { to: "/databases", label: "قواعد البيانات", icon: Database },

@@ -7,11 +7,12 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAuthRoute = pathname === "/auth";
+  const isPublicRoute = pathname === "/";
 
   useEffect(() => {
     if (loading) return;
-    if (!user && !isAuthRoute) navigate({ to: "/auth", replace: true });
-  }, [user, loading, isAuthRoute, navigate]);
+    if (!user && !isAuthRoute && !isPublicRoute) navigate({ to: "/auth", replace: true });
+  }, [user, loading, isAuthRoute, isPublicRoute, navigate]);
 
   if (loading) {
     return (
@@ -21,7 +22,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  if (isAuthRoute) return <>{children}</>;
+  if (isAuthRoute || isPublicRoute) return <>{children}</>;
   if (!user) return null;
   return <>{children}</>;
 }
