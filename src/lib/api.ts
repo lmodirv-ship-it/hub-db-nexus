@@ -471,7 +471,7 @@ export const api = {
     if (patch.description !== undefined) dbPatch.description = patch.description;
     if (patch.status !== undefined) dbPatch.status = patch.status;
     if (patch.websiteId !== undefined) dbPatch.website_id = patch.websiteId;
-    const { data, error } = await supabase.from("projects").update(dbPatch).eq("id", id).select("*").single();
+    const { data, error } = await supabase.from("projects").update(dbPatch as never).eq("id", id).select("*").single();
     if (error) throw error;
     await log("تحديث مشروع", { websiteId: data.website_id });
     return mapProject(data);
@@ -509,7 +509,7 @@ export const api = {
     if (patch.durationSec !== undefined) dbPatch.duration_sec = patch.durationSec;
     if (patch.status !== undefined) dbPatch.status = patch.status;
     if (patch.orderIndex !== undefined) dbPatch.order_index = patch.orderIndex;
-    const { data, error } = await supabase.from("clips").update(dbPatch).eq("id", id).select("*").single();
+    const { data, error } = await supabase.from("clips").update(dbPatch as never).eq("id", id).select("*").single();
     if (error) throw error;
     return mapClip(data);
   },
@@ -532,7 +532,7 @@ export const api = {
       owner_id, type: input.type,
       project_id: input.projectId ?? null,
       clip_id: input.clipId ?? null,
-      payload: input.payload ?? {},
+      payload: (input.payload ?? {}) as never,
     }).select("*").single();
     if (error) throw error;
     return mapJob(data);
