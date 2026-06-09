@@ -33,7 +33,7 @@ function AuthPage() {
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/" });
+    if (!loading && user) navigate({ to: "/dashboard" });
   }, [user, loading, navigate]);
 
   const upd = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -47,7 +47,7 @@ function AuthPage() {
       if (tab === "signin") {
         await signIn(form.email, form.password);
         toast.success("تم تسجيل الدخول");
-        navigate({ to: "/" });
+        navigate({ to: "/dashboard" });
       } else {
         if (!form.fullName) { toast.error("الاسم مطلوب"); setBusy(false); return; }
         await signUp(form.email, form.password, form.fullName);
