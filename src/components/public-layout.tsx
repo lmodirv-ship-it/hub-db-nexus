@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Database, LogIn, Globe } from "lucide-react";
+import { LogIn, Globe } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useLanguage, type Lang } from "@/hooks/use-language";
@@ -67,17 +68,7 @@ function PublicNav() {
     </Button>
   );
 
-  const Brand = (
-    <Link to="/" className="flex items-center gap-3">
-      <div className="font-bold tracking-tight text-lg">{c?.brand ?? "HN-DB"}</div>
-      <div
-        className="flex h-9 w-9 items-center justify-center rounded-xl text-primary-foreground shadow-[0_0_24px_-4px_var(--primary)]"
-        style={{ background: "var(--gradient-primary)" }}
-      >
-        <Database className="h-5 w-5" />
-      </div>
-    </Link>
-  );
+  const Brand = <BrandLogo size={40} showText={false} />;
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/60 border-b border-border/40">

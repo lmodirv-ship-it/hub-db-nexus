@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { Server, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -63,14 +64,9 @@ function AuthPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-6 bg-background">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-3">
-          <div
-            className="mx-auto h-14 w-14 rounded-2xl flex items-center justify-center text-primary-foreground"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <Server className="h-7 w-7" />
-          </div>
-          <div>
+        <div className="flex flex-col items-center space-y-3">
+          <BrandLogo size={64} showText={false} />
+          <div className="text-center">
             <h1 className="text-2xl font-bold">HN-DB</h1>
             <p className="text-sm text-muted-foreground">مركز قواعد البيانات الآمن</p>
           </div>

@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Database, PlusCircle, Link2, Archive, ScrollText,
-  Server, Globe, Smartphone, Activity, Bell,
+  Globe, Smartphone, Activity, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { BrandLogo } from "@/components/brand-logo";
 
 const items = [
   { to: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -30,17 +31,8 @@ export function AppSidebar() {
 
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-l border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-primary-foreground"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          <Server className="h-5 w-5" />
-        </div>
-        <div>
-          <div className="text-base font-bold tracking-tight">HN-DB</div>
-          <div className="text-[11px] text-muted-foreground">مركز قواعد البيانات</div>
-        </div>
+      <div className="px-6 py-5 border-b border-sidebar-border">
+        <BrandLogo size={40} subtitle="مركز قواعد البيانات" />
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
