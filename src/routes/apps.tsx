@@ -123,10 +123,10 @@ function AppsPage() {
       <div className="flex-1 p-6 space-y-6">
         {/* Upload card */}
         <Card className="p-6 bg-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
             <Upload className="h-4 w-4 text-primary" />
             رفع إصدار جديد
-          </h3>
+          </h2>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
@@ -228,7 +228,7 @@ function AppsPage() {
         {/* Releases history */}
         <Card className="bg-card overflow-hidden">
           <div className="p-4 border-b border-border flex items-center justify-between">
-            <h3 className="font-semibold flex items-center gap-2"><Smartphone className="h-4 w-4 text-primary" />سجل الإصدارات</h3>
+            <h2 className="font-semibold flex items-center gap-2"><Smartphone className="h-4 w-4 text-primary" />سجل الإصدارات</h2>
             <Select value={websiteId || "__all"} onValueChange={(v) => setWebsiteId(v === "__all" ? "" : v)}>
               <SelectTrigger className="w-56"><SelectValue placeholder="تصفية حسب الموقع" /></SelectTrigger>
               <SelectContent>
@@ -275,13 +275,15 @@ function AppsPage() {
                     </td>
                     <td className="p-3">
                       <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => download(r)} disabled={!r.filePath}>
+                        <Button size="icon" variant="ghost" aria-label="تنزيل الإصدار" onClick={() => download(r)} disabled={!r.filePath}>
                           <Download className="h-4 w-4" />
+                          <span className="sr-only">تنزيل الإصدار</span>
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive">
+                            <Button size="icon" variant="ghost" aria-label="حذف الإصدار" className="text-destructive hover:text-destructive">
                               <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">حذف الإصدار</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>

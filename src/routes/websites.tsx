@@ -76,7 +76,7 @@ function WebsitesPage() {
       <PageHeader title="المواقع" subtitle={`${websites.length} موقع مُسجَّل في HN-DB`} />
       <div className="flex-1 p-6 space-y-6">
         <Card className="p-6 bg-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2"><Plus className="h-4 w-4 text-primary" />إضافة موقع جديد</h3>
+          <h2 className="font-semibold mb-4 flex items-center gap-2"><Plus className="h-4 w-4 text-primary" />إضافة موقع جديد</h2>
           <form onSubmit={submit} className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
             <div className="space-y-1.5">
               <Label className="text-xs">اسم الموقع *</Label>
@@ -135,8 +135,9 @@ function WebsitesPage() {
                       <td className="p-3">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive">
+                            <Button size="icon" variant="ghost" aria-label="حذف الموقع" className="text-destructive hover:text-destructive">
                               <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">حذف الموقع</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>

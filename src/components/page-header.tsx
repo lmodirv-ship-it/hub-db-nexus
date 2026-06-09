@@ -31,7 +31,7 @@ export function PageHeader({ title, subtitle, actions }: Props) {
 
         <div className="relative hidden lg:block">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="ابحث..." className="w-72 pr-9 bg-background/40" />
+          <Input aria-label="ابحث" placeholder="ابحث..." className="w-72 pr-9 bg-background/40" />
         </div>
 
         <button className="relative h-9 w-9 rounded-lg border border-border bg-background/40 flex items-center justify-center hover:bg-accent transition-colors" aria-label="إشعارات">
