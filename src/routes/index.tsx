@@ -43,51 +43,9 @@ function LandingPage() {
   return (
     <PublicLayout>
       <section className="relative">
-        <div className="max-w-5xl mx-auto px-6 pt-20 pb-28 text-center">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight">
-            {c.hero.titleLines.map((line, i) => (
-              <span key={i} className="block">
-                {line.map((part, j) =>
-                  part.emph ? (
-                    <span key={j} className="neon-text">{part.text}</span>
-                  ) : (
-                    <span key={j}>{part.text}</span>
-                  ),
-                )}
-              </span>
-            ))}
-          </h1>
-
-          <p className="mt-8 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            {c.hero.subtitle}
-          </p>
-
-          <div className="mt-10 flex flex-wrap gap-3 justify-center">
-            <Button
-              asChild
-              size="lg"
-              className="text-base h-12 px-7 rounded-full shadow-[0_0_40px_-8px_var(--primary)]"
-            >
-              <Link to={user ? "/dashboard" : "/auth"}>
-                {c.hero.ctaStart}
-                <ArrowLeft className={isRtl ? "h-4 w-4 mr-2" : "h-4 w-4 ml-2 rotate-180"} />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="text-base h-12 px-7 rounded-full"
-            >
-              <Link to="/features">
-                <Layers className="h-4 w-4 mx-2" />
-                {c.hero.ctaFeatures}
-              </Link>
-            </Button>
-          </div>
-
-          {/* Hero illustration */}
-          <div className="relative mt-16 max-w-3xl mx-auto">
+        <div className="max-w-7xl mx-auto px-6 pt-16 pb-24 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+          {/* Illustration */}
+          <div className="relative order-2 lg:order-1">
             <div
               className="absolute inset-0 rounded-[2rem] blur-3xl opacity-40"
               style={{ background: "var(--gradient-primary)" }}
@@ -97,14 +55,54 @@ function LandingPage() {
               alt={c.brand}
               width={1536}
               height={1024}
-              className="relative rounded-[2rem] ring-1 ring-primary/20 shadow-[0_30px_80px_-20px_oklch(0.74_0.17_235/0.45)]"
+              className="relative rounded-[2rem] ring-1 ring-primary/20 shadow-[0_30px_80px_-20px_oklch(0.74_0.17_235/0.45)] w-full"
             />
           </div>
-        </div>
 
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground flex flex-col items-center gap-2 opacity-70">
-          <span>{c.hero.scrollHint}</span>
-          <div className="h-6 w-px bg-primary/50 animate-pulse" />
+          {/* Text */}
+          <div className="order-1 lg:order-2 text-center lg:text-start">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[1.15] tracking-tight">
+              {c.hero.titleLines.map((line, i) => (
+                <span key={i} className="block">
+                  {line.map((part, j) =>
+                    part.emph ? (
+                      <span key={j} className="neon-text">{part.text}</span>
+                    ) : (
+                      <span key={j}>{part.text}</span>
+                    ),
+                  )}
+                </span>
+              ))}
+            </h1>
+
+            <p className="mt-6 text-lg text-muted-foreground max-w-xl lg:mx-0 mx-auto leading-relaxed">
+              {c.hero.subtitle}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
+              <Button
+                asChild
+                size="lg"
+                className="text-base h-12 px-7 rounded-full shadow-[0_0_40px_-8px_var(--primary)]"
+              >
+                <Link to={user ? "/dashboard" : "/auth"}>
+                  {c.hero.ctaStart}
+                  <ArrowLeft className={isRtl ? "h-4 w-4 mr-2" : "h-4 w-4 ml-2 rotate-180"} />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="text-base h-12 px-7 rounded-full"
+              >
+                <Link to="/features">
+                  <Layers className="h-4 w-4 mx-2" />
+                  {c.hero.ctaFeatures}
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
