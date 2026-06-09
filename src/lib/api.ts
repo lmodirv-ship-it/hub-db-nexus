@@ -441,7 +441,148 @@ export const api = {
     if (error) throw error;
     return data.signedUrl;
   },
+
+  // ============== Projects ==============
+  async listProjects(): Promise<Project[]> {
+    const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapProject);
+  },
+  async getProject(id: string): Promise<Project> {
+    const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
+    if (error) throw error;
+    return mapProject(data);
+  },
+  async createProject(input: { name: string; description?: string | null; websiteId?: string | null }): Promise<Project> {
+    const owner_id = await uid();
+    const { data, error } = await supabase.from("projects").insert({
+      owner_id, name: input.name,
+      description: input.description ?? null,
+      website_id: input.websiteId ?? null,
+    }).select("*").single();
+    if (error) throw error;
+    const p = mapProject(data);
+    await log("إنشاء مشروع", { websiteId: p.websiteId });
+    return p;
+  },
+  async updateProject(id: string, patch: Partial<{ name: string; description: string | null; status: string; websiteId: string | null }>): Promise<Project> {
+    const dbPatch: Record<string, unknown> = {};
+    if (patch.name !== undefined) dbPatch.name = patch.name;
+    if (patch.description !== undefined) dbPatch.description = patch.description;
+    if (patch.status !== undefined) dbPatch.status = patch.status;
+    if (patch.websiteId !== undefined) dbPatch.website_id = patch.websiteId;
+    const { data, error } = await supabase.from("projects").update(dbPatch as never).eq("id", id).select("*").single();
+    if (error) throw error;
+    await log("تحديث مشروع", { websiteId: data.website_id });
+    return mapProject(data);
+  },
+  async deleteProject(id: string) {
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (error) throw error;
+    await log("حذف مشروع");
+  },
+
+  // ============== Clips ==============
+  async listClips(projectId: string): Promise<Clip[]> {
+    const { data, error } = await supabase.from("clips").select("*")
+      .eq("project_id", projectId).order("order_index", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map(mapClip);
+  },
+  async createClip(input: { projectId: string; title: string; sourceUrl?: string | null; durationSec?: number }): Promise<Clip> {
+    const owner_id = await uid();
+    const { data: existing } = await supabase.from("clips").select("order_index").eq("project_id", input.projectId).order("order_index", { ascending: false }).limit(1);
+    const nextIdx = (existing?.[0]?.order_index ?? -1) + 1;
+    const { data, error } = await supabase.from("clips").insert({
+      owner_id, project_id: input.projectId, title: input.title,
+      source_url: input.sourceUrl ?? null,
+      duration_sec: input.durationSec ?? 0,
+      order_index: nextIdx,
+    }).select("*").single();
+    if (error) throw error;
+    return mapClip(data);
+  },
+  async updateClip(id: string, patch: Partial<{ title: string; sourceUrl: string | null; durationSec: number; status: string; orderIndex: number }>) {
+    const dbPatch: Record<string, unknown> = {};
+    if (patch.title !== undefined) dbPatch.title = patch.title;
+    if (patch.sourceUrl !== undefined) dbPatch.source_url = patch.sourceUrl;
+    if (patch.durationSec !== undefined) dbPatch.duration_sec = patch.durationSec;
+    if (patch.status !== undefined) dbPatch.status = patch.status;
+    if (patch.orderIndex !== undefined) dbPatch.order_index = patch.orderIndex;
+    const { data, error } = await supabase.from("clips").update(dbPatch as never).eq("id", id).select("*").single();
+    if (error) throw error;
+    return mapClip(data);
+  },
+  async deleteClip(id: string) {
+    const { error } = await supabase.from("clips").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  // ============== Jobs ==============
+  async listJobs(opts: { projectId?: string; limit?: number } = {}): Promise<Job[]> {
+    let q = supabase.from("jobs").select("*").order("created_at", { ascending: false }).limit(opts.limit ?? 50);
+    if (opts.projectId) q = q.eq("project_id", opts.projectId);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapJob);
+  },
+  async createJob(input: { type: string; projectId?: string | null; clipId?: string | null; payload?: Record<string, unknown> }): Promise<Job> {
+    const owner_id = await uid();
+    const { data, error } = await supabase.from("jobs").insert({
+      owner_id, type: input.type,
+      project_id: input.projectId ?? null,
+      clip_id: input.clipId ?? null,
+      payload: (input.payload ?? {}) as never,
+    }).select("*").single();
+    if (error) throw error;
+    return mapJob(data);
+  },
+  async cancelJob(id: string) {
+    const { error } = await supabase.from("jobs").update({ status: "cancelled", finished_at: new Date().toISOString() }).eq("id", id);
+    if (error) throw error;
+  },
+  async deleteJob(id: string) {
+    const { error } = await supabase.from("jobs").delete().eq("id", id);
+    if (error) throw error;
+  },
 };
+
+export interface Project {
+  id: string; name: string; description: string | null; status: string;
+  websiteId: string | null; createdAt: string; updatedAt: string;
+}
+function mapProject(r: any): Project {
+  return {
+    id: r.id, name: r.name, description: r.description, status: r.status,
+    websiteId: r.website_id, createdAt: r.created_at, updatedAt: r.updated_at,
+  };
+}
+export interface Clip {
+  id: string; projectId: string; title: string; sourceUrl: string | null;
+  thumbnailUrl: string | null; durationSec: number; status: string;
+  orderIndex: number; createdAt: string;
+}
+function mapClip(r: any): Clip {
+  return {
+    id: r.id, projectId: r.project_id, title: r.title,
+    sourceUrl: r.source_url, thumbnailUrl: r.thumbnail_url,
+    durationSec: r.duration_sec, status: r.status,
+    orderIndex: r.order_index, createdAt: r.created_at,
+  };
+}
+export interface Job {
+  id: string; projectId: string | null; clipId: string | null;
+  type: string; status: string; progress: number; error: string | null;
+  startedAt: string | null; finishedAt: string | null; createdAt: string;
+}
+function mapJob(r: any): Job {
+  return {
+    id: r.id, projectId: r.project_id, clipId: r.clip_id,
+    type: r.type, status: r.status, progress: r.progress,
+    error: r.error, startedAt: r.started_at, finishedAt: r.finished_at,
+    createdAt: r.created_at,
+  };
+}
 
 export interface AppRelease {
   id: string; websiteId: string; versionName: string; versionCode: number;

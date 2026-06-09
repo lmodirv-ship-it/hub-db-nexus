@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Database, PlusCircle, Link2, Archive, ScrollText,
-  Globe, Smartphone, Activity, Bell,
+  Globe, Smartphone, Activity, Bell, FolderKanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { BrandLogo } from "@/components/brand-logo";
 
 const items = [
   { to: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
+  { to: "/projects", label: "المشاريع", icon: FolderKanban },
   { to: "/health", label: "مراقب الحالة", icon: Activity },
   { to: "/alerts", label: "التنبيهات", icon: Bell, badge: true as const },
   { to: "/databases", label: "قواعد البيانات", icon: Database },
