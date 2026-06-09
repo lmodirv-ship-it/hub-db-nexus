@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicLayout } from "@/components/public-layout";
+import { useSiteContent } from "@/hooks/use-site-content";
 
 export const Route = createFileRoute("/docs")({
   head: () => ({
@@ -15,44 +16,32 @@ export const Route = createFileRoute("/docs")({
   component: DocsPage,
 });
 
-const SECTIONS = [
-  {
-    t: "كيف يعمل؟",
-    body: "HN-DB يعمل كوسيط آمن بين مواقعك وقواعد البيانات. اربط موقعك مرة واحدة، وأدر كل شيء من لوحة واحدة.",
-  },
-  {
-    t: "ربط موقع PHP / Node / Python",
-    body: "استخدم مفتاح API الخاص بمشروعك لإجراء طلبات HTTPS مباشرة إلى /api/public/site-config مع تمرير الدومين.",
-  },
-  {
-    t: "المصادقة الموحدة (SSO)",
-    body: "كل مستخدم في HN-DB يحصل على جلسة موحدة. استخدم Bearer token لاستدعاء وظائف الخادم المحمية.",
-  },
-  {
-    t: "رفع ملفات للتخزين",
-    body: "ارفع APK / AAB أو نسخك الاحتياطية إلى bucket app-releases. يتم توليد روابط موقّعة لمدة ساعة.",
-  },
-  {
-    t: "نشر على VPS",
-    body: "راجع ملف DEPLOYMENT.md داخل المشروع للحصول على دليل البناء والتشغيل على سيرفر محلي أو VPS.",
-  },
-];
-
 function DocsPage() {
+  const { data: c, isLoading } = useSiteContent();
+  if (isLoading || !c) {
+    return (
+      <PublicLayout>
+        <div className="min-h-[50vh] flex items-center justify-center">
+          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        </div>
+      </PublicLayout>
+    );
+  }
+
   return (
     <PublicLayout>
       <main className="max-w-4xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
-          <div className="text-xs uppercase tracking-widest text-primary mb-3">الوثائق</div>
-          <h1 className="text-4xl md:text-5xl font-bold">ابدأ بسرعة مع HN-DB</h1>
-          <p className="mt-4 text-muted-foreground">دليل مفصّل لكل ميزة، مع أمثلة جاهزة.</p>
+          <div className="text-xs uppercase tracking-widest text-primary mb-3">{c.docs.eyebrow}</div>
+          <h1 className="text-4xl md:text-5xl font-bold">{c.docs.title}</h1>
+          <p className="mt-4 text-muted-foreground">{c.docs.subtitle}</p>
         </div>
 
         <div className="space-y-4">
-          {SECTIONS.map((s) => (
+          {c.docs.sections.map((s) => (
             <article
               key={s.t}
-              className="rounded-2xl border border-border bg-card p-6 text-right hover:border-primary/50 transition"
+              className="rounded-2xl border border-border bg-card p-6 hover:border-primary/50 transition"
             >
               <h2 className="text-lg font-semibold">{s.t}</h2>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.body}</p>

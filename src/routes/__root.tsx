@@ -13,6 +13,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AuthGate } from "@/components/auth-gate";
+import { LanguageProvider } from "@/hooks/use-language";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -105,11 +106,13 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <AuthGate>
-          <Shell />
-        </AuthGate>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <AuthGate>
+            <Shell />
+          </AuthGate>
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
