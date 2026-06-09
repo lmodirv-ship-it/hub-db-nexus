@@ -74,7 +74,12 @@ function RootShell({ children }: { children: ReactNode }) {
 function Shell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAuth = pathname === "/auth";
-  const isLanding = pathname === "/";
+  const isLanding =
+    pathname === "/" ||
+    pathname === "/features" ||
+    pathname === "/pricing" ||
+    pathname === "/docs" ||
+    pathname === "/contact";
 
   if (isAuth || isLanding) {
     return (

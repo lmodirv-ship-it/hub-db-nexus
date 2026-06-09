@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WebsitesRouteImport } from './routes/websites'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LogsRouteImport } from './routes/logs'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConnectionsRouteImport } from './routes/connections'
 import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -35,6 +38,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LogsRoute = LogsRouteImport.update({
   id: '/logs',
   path: '/logs',
@@ -50,9 +58,19 @@ const FeaturesRoute = FeaturesRouteImport.update({
   path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnectionsRoute = ConnectionsRouteImport.update({
@@ -108,10 +126,13 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/docs': typeof DocsRoute
   '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
@@ -125,10 +146,13 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/docs': typeof DocsRoute
   '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
@@ -143,10 +167,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/backups': typeof BackupsRoute
   '/connections': typeof ConnectionsRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/docs': typeof DocsRoute
   '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/websites': typeof WebsitesRoute
   '/databases/add': typeof DatabasesAddRoute
@@ -162,10 +189,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/backups'
     | '/connections'
+    | '/contact'
     | '/dashboard'
+    | '/docs'
     | '/features'
     | '/health'
     | '/logs'
+    | '/pricing'
     | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
@@ -179,10 +209,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/backups'
     | '/connections'
+    | '/contact'
     | '/dashboard'
+    | '/docs'
     | '/features'
     | '/health'
     | '/logs'
+    | '/pricing'
     | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
@@ -196,10 +229,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/backups'
     | '/connections'
+    | '/contact'
     | '/dashboard'
+    | '/docs'
     | '/features'
     | '/health'
     | '/logs'
+    | '/pricing'
     | '/sitemap.xml'
     | '/websites'
     | '/databases/add'
@@ -214,10 +250,13 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BackupsRoute: typeof BackupsRoute
   ConnectionsRoute: typeof ConnectionsRoute
+  ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
+  DocsRoute: typeof DocsRoute
   FeaturesRoute: typeof FeaturesRoute
   HealthRoute: typeof HealthRoute
   LogsRoute: typeof LogsRoute
+  PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WebsitesRoute: typeof WebsitesRoute
   DatabasesAddRoute: typeof DatabasesAddRoute
@@ -241,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/logs': {
       id: '/logs'
       path: '/logs'
@@ -262,11 +308,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connections': {
@@ -342,10 +402,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BackupsRoute: BackupsRoute,
   ConnectionsRoute: ConnectionsRoute,
+  ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
+  DocsRoute: DocsRoute,
   FeaturesRoute: FeaturesRoute,
   HealthRoute: HealthRoute,
   LogsRoute: LogsRoute,
+  PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WebsitesRoute: WebsitesRoute,
   DatabasesAddRoute: DatabasesAddRoute,
@@ -355,13 +418,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
