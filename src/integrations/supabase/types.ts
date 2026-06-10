@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      api_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          last_used_at: string | null
+          name: string
+          owner_id: string
+          scopes: string[]
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name: string
+          owner_id: string
+          scopes?: string[]
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          owner_id?: string
+          scopes?: string[]
+          token_hash?: string
+        }
+        Relationships: []
+      }
       app_releases: {
         Row: {
           created_at: string
@@ -92,6 +125,42 @@ export type Database = {
           version_code?: number
           version_name?: string
           website_id?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip: string | null
+          metadata: Json
+          owner_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip?: string | null
+          metadata?: Json
+          owner_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip?: string | null
+          metadata?: Json
+          owner_id?: string
         }
         Relationships: []
       }
@@ -257,6 +326,146 @@ export type Database = {
           },
         ]
       }
+      deployments: {
+        Row: {
+          commit_sha: string | null
+          created_at: string
+          environment_id: string | null
+          finished_at: string | null
+          id: string
+          log: string | null
+          owner_id: string
+          source: string
+          started_at: string
+          status: string
+          url: string | null
+          website_id: string | null
+        }
+        Insert: {
+          commit_sha?: string | null
+          created_at?: string
+          environment_id?: string | null
+          finished_at?: string | null
+          id?: string
+          log?: string | null
+          owner_id: string
+          source?: string
+          started_at?: string
+          status?: string
+          url?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          commit_sha?: string | null
+          created_at?: string
+          environment_id?: string | null
+          finished_at?: string | null
+          id?: string
+          log?: string | null
+          owner_id?: string
+          source?: string
+          started_at?: string
+          status?: string
+          url?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployments_environment_id_fkey"
+            columns: ["environment_id"]
+            isOneToOne: false
+            referencedRelation: "environments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deployments_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      environments: {
+        Row: {
+          branch: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+          url: string | null
+          variables: Json
+          website_id: string | null
+        }
+        Insert: {
+          branch?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+          url?: string | null
+          variables?: Json
+          website_id?: string | null
+        }
+        Update: {
+          branch?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+          url?: string | null
+          variables?: Json
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "environments_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integrations: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          name: string
+          owner_id: string
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          owner_id: string
+          provider: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          owner_id?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           clip_id: string | null
@@ -353,6 +562,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string | null
+          channel: string
+          created_at: string
+          id: string
+          link: string | null
+          owner_id: string
+          read: boolean
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          channel?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          owner_id: string
+          read?: boolean
+          title: string
+        }
+        Update: {
+          body?: string | null
+          channel?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          owner_id?: string
+          read?: boolean
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -415,6 +657,110 @@ export type Database = {
           },
         ]
       }
+      schedules: {
+        Row: {
+          created_at: string
+          cron: string
+          enabled: boolean
+          id: string
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          owner_id: string
+          payload: Json
+          target_id: string | null
+          target_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cron: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          owner_id: string
+          payload?: Json
+          target_id?: string | null
+          target_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cron?: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          owner_id?: string
+          payload?: Json
+          target_id?: string | null
+          target_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      secrets_vault: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          owner_id: string
+          updated_at: string
+          value: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          owner_id: string
+          updated_at?: string
+          value: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          owner_id?: string
+          updated_at?: string
+          value?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secrets_vault_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      settings: {
+        Row: {
+          owner_id: string
+          preferences: Json
+          updated_at: string
+        }
+        Insert: {
+          owner_id: string
+          preferences?: Json
+          updated_at?: string
+        }
+        Update: {
+          owner_id?: string
+          preferences?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_content: {
         Row: {
           content: Json
@@ -475,6 +821,39 @@ export type Database = {
           name?: string
           owner_id?: string
           status?: string
+        }
+        Relationships: []
+      }
+      workspaces: {
+        Row: {
+          created_at: string
+          external_id: string | null
+          id: string
+          metadata: Json
+          name: string
+          owner_id: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          owner_id: string
+          provider?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          owner_id?: string
+          provider?: string
+          updated_at?: string
         }
         Relationships: []
       }
