@@ -31,7 +31,7 @@ import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as DatabasesAddRouteImport } from './routes/databases.add'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
-import { Route as ApiExternalSchemasMirrorRouteImport } from './routes/api.external-schemas.mirror'
+import { Route as ApiExternalSchemasMirrorRouteImport } from './routes/api/external-schemas.mirror'
 import { Route as ApiExternalDataSyncRouteImport } from './routes/api.external-data.sync'
 
 const WebsitesRoute = WebsitesRouteImport.update({
