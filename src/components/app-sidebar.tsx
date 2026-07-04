@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Database, PlusCircle, Link2, Archive, ScrollText,
-  Globe, Smartphone, Activity, Bell, FolderKanban,
+  Globe, Smartphone, Activity, Bell, FolderKanban, TableProperties, Rows3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +16,8 @@ const items = [
   { to: "/databases", label: "قواعد البيانات", icon: Database },
   { to: "/databases/add", label: "إضافة قاعدة", icon: PlusCircle },
   { to: "/websites", label: "المواقع", icon: Globe },
+  { to: "/external-schemas", label: "مرآة الجداول", icon: TableProperties },
+  { to: "/external-data", label: "البيانات الخارجية", icon: Rows3 },
   { to: "/apps", label: "APK Manager", icon: Smartphone },
   { to: "/connections", label: "ربط المواقع", icon: Link2 },
   { to: "/backups", label: "النسخ الاحتياطية", icon: Archive },
