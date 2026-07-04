@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/external-data/sync")({
               source_name,
               table_name: String(r.table_name),
               row_pk: String(r.row_pk),
-              payload: r.payload ?? {},
+              payload: (r.payload ?? {}) as any,
               received_at: now,
             }));
 

@@ -29,6 +29,8 @@ import { Route as DatabasesIndexRouteImport } from './routes/databases.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as DatabasesAddRouteImport } from './routes/databases.add'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
+import { Route as ApiExternalSchemasMirrorRouteImport } from './routes/api.external-schemas.mirror'
+import { Route as ApiExternalDataSyncRouteImport } from './routes/api.external-data.sync'
 
 const WebsitesRoute = WebsitesRouteImport.update({
   id: '/websites',
@@ -130,6 +132,17 @@ const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
   path: '/api/public/site-config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExternalSchemasMirrorRoute =
+  ApiExternalSchemasMirrorRouteImport.update({
+    id: '/api/external-schemas/mirror',
+    path: '/api/external-schemas/mirror',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiExternalDataSyncRoute = ApiExternalDataSyncRouteImport.update({
+  id: '/api/external-data/sync',
+  path: '/api/external-data/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -151,6 +164,8 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/databases/': typeof DatabasesIndexRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/api/external-data/sync': typeof ApiExternalDataSyncRoute
+  '/api/external-schemas/mirror': typeof ApiExternalSchemasMirrorRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRoutesByTo {
@@ -173,6 +188,8 @@ export interface FileRoutesByTo {
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/databases': typeof DatabasesIndexRoute
   '/projects': typeof ProjectsIndexRoute
+  '/api/external-data/sync': typeof ApiExternalDataSyncRoute
+  '/api/external-schemas/mirror': typeof ApiExternalSchemasMirrorRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRoutesById {
@@ -196,6 +213,8 @@ export interface FileRoutesById {
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/databases/': typeof DatabasesIndexRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/api/external-data/sync': typeof ApiExternalDataSyncRoute
+  '/api/external-schemas/mirror': typeof ApiExternalSchemasMirrorRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
 }
 export interface FileRouteTypes {
@@ -220,6 +239,8 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/databases/'
     | '/projects/'
+    | '/api/external-data/sync'
+    | '/api/external-schemas/mirror'
     | '/api/public/site-config'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -242,6 +263,8 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/databases'
     | '/projects'
+    | '/api/external-data/sync'
+    | '/api/external-schemas/mirror'
     | '/api/public/site-config'
   id:
     | '__root__'
@@ -264,6 +287,8 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/databases/'
     | '/projects/'
+    | '/api/external-data/sync'
+    | '/api/external-schemas/mirror'
     | '/api/public/site-config'
   fileRoutesById: FileRoutesById
 }
@@ -287,6 +312,8 @@ export interface RootRouteChildren {
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  ApiExternalDataSyncRoute: typeof ApiExternalDataSyncRoute
+  ApiExternalSchemasMirrorRoute: typeof ApiExternalSchemasMirrorRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
 }
 
@@ -432,6 +459,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSiteConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/external-schemas/mirror': {
+      id: '/api/external-schemas/mirror'
+      path: '/api/external-schemas/mirror'
+      fullPath: '/api/external-schemas/mirror'
+      preLoaderRoute: typeof ApiExternalSchemasMirrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/external-data/sync': {
+      id: '/api/external-data/sync'
+      path: '/api/external-data/sync'
+      fullPath: '/api/external-data/sync'
+      preLoaderRoute: typeof ApiExternalDataSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -455,6 +496,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  ApiExternalDataSyncRoute: ApiExternalDataSyncRoute,
+  ApiExternalSchemasMirrorRoute: ApiExternalSchemasMirrorRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
 }
 export const routeTree = rootRouteImport
