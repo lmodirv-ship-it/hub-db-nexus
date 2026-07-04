@@ -430,6 +430,84 @@ export type Database = {
           },
         ]
       }
+      external_data_rows: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          received_at: string
+          row_pk: string
+          source_name: string
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          received_at?: string
+          row_pk: string
+          source_name: string
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          received_at?: string
+          row_pk?: string
+          source_name?: string
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      external_schema_mirrors: {
+        Row: {
+          created_at: string
+          id: string
+          last_sync_at: string
+          payload_hash: string | null
+          received_at: string
+          schema_name: string
+          source_name: string
+          status: string
+          tables_count: number
+          tables_snapshot: Json
+          target_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string
+          payload_hash?: string | null
+          received_at?: string
+          schema_name?: string
+          source_name: string
+          status?: string
+          tables_count?: number
+          tables_snapshot?: Json
+          target_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string
+          payload_hash?: string | null
+          received_at?: string
+          schema_name?: string
+          source_name?: string
+          status?: string
+          tables_count?: number
+          tables_snapshot?: Json
+          target_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integrations: {
         Row: {
           config: Json
