@@ -15,6 +15,8 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LogsRouteImport } from './routes/logs'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as ExternalSchemasRouteImport } from './routes/external-schemas'
+import { Route as ExternalDataRouteImport } from './routes/external-data'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -60,6 +62,16 @@ const HealthRoute = HealthRouteImport.update({
 const FeaturesRoute = FeaturesRouteImport.update({
   id: '/features',
   path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExternalSchemasRoute = ExternalSchemasRouteImport.update({
+  id: '/external-schemas',
+  path: '/external-schemas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExternalDataRoute = ExternalDataRouteImport.update({
+  id: '/external-data',
+  path: '/external-data',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -154,6 +166,8 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
+  '/external-data': typeof ExternalDataRoute
+  '/external-schemas': typeof ExternalSchemasRoute
   '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
@@ -178,6 +192,8 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
+  '/external-data': typeof ExternalDataRoute
+  '/external-schemas': typeof ExternalSchemasRoute
   '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
@@ -203,6 +219,8 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
+  '/external-data': typeof ExternalDataRoute
+  '/external-schemas': typeof ExternalSchemasRoute
   '/features': typeof FeaturesRoute
   '/health': typeof HealthRoute
   '/logs': typeof LogsRoute
@@ -229,6 +247,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/docs'
+    | '/external-data'
+    | '/external-schemas'
     | '/features'
     | '/health'
     | '/logs'
@@ -253,6 +273,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/docs'
+    | '/external-data'
+    | '/external-schemas'
     | '/features'
     | '/health'
     | '/logs'
@@ -277,6 +299,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/docs'
+    | '/external-data'
+    | '/external-schemas'
     | '/features'
     | '/health'
     | '/logs'
@@ -302,6 +326,8 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
   DocsRoute: typeof DocsRoute
+  ExternalDataRoute: typeof ExternalDataRoute
+  ExternalSchemasRoute: typeof ExternalSchemasRoute
   FeaturesRoute: typeof FeaturesRoute
   HealthRoute: typeof HealthRoute
   LogsRoute: typeof LogsRoute
@@ -359,6 +385,20 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features'
       preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/external-schemas': {
+      id: '/external-schemas'
+      path: '/external-schemas'
+      fullPath: '/external-schemas'
+      preLoaderRoute: typeof ExternalSchemasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/external-data': {
+      id: '/external-data'
+      path: '/external-data'
+      fullPath: '/external-data'
+      preLoaderRoute: typeof ExternalDataRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -486,6 +526,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
   DocsRoute: DocsRoute,
+  ExternalDataRoute: ExternalDataRoute,
+  ExternalSchemasRoute: ExternalSchemasRoute,
   FeaturesRoute: FeaturesRoute,
   HealthRoute: HealthRoute,
   LogsRoute: LogsRoute,
